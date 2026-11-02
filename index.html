@@ -135,6 +135,11 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
 .hm-src ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 3px; }
 .hm a { color: var(--hm-s1); }
 .hm [hidden] { display: none !important; }
+
+.hm-asm { flex: 1 1 13rem; }
+.hm-asm input { width: 100%; }
+.hm td.hm-good { background: color-mix(in srgb, var(--hm-up) 16%, transparent); }
+.hm td.hm-bad { background: color-mix(in srgb, var(--hm-down) 14%, transparent); }
 .hm-seg { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 2px; background: var(--color-bg); }
 .hm-segbtn { font: inherit; font-size: var(--cds-font-size-caption); border: 0; background: transparent; color: var(--color-fg-muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
 .hm-segbtn[aria-pressed="true"] { background: var(--hm-s1); color: var(--color-bg); font-weight: 600; }
@@ -220,6 +225,8 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
     <button role="tab" id="tab-bands" data-tab="bands">Price bands</button>
     <button role="tab" id="tab-mortgages" data-tab="mortgages">Mortgages and rates</button>
     <button role="tab" id="tab-inflation" data-tab="inflation">Inflation detail</button>
+    <button role="tab" id="tab-btl" data-tab="btl">Buy-to-let vs S&amp;P 500</button>
+    <button role="tab" id="tab-btltax" data-tab="btltax">After tax</button>
     <button role="tab" id="tab-local" data-tab="local">Local areas</button>
     <button role="tab" id="tab-sources" data-tab="sources">Sources and method</button>
   </nav>
@@ -392,6 +399,111 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
       <div class="hm-tablewrap" data-draw="realmortgage" data-source="hpi_headline cpi boe_mortgage"></div>
     </div>
   </section>
+
+  <section class="hm-panel" id="btl" data-panel="btl" hidden>
+    <div class="hm-controls hm-sub">
+      <label class="hm-field"><span>Region <button type="button" class="hm-info" aria-label="What this means" data-tip="Net returns cover England and Northern Ireland, where Stamp Duty Land Tax applies. Wales (Land Transaction Tax) and Scotland (LBTT with Additional Dwelling Supplement) have different purchase taxes and are not modelled.">i</button></span>
+        <select id="ctl-btl-region" aria-label="Buy-to-let region">
+          <option>England</option><option>North East</option><option>North West</option><option>Yorkshire and The Humber</option><option>East Midlands</option><option value="West Midlands Region">West Midlands</option><option>East of England</option><option>London</option><option>South East</option><option>South West</option><option>Northern Ireland</option>
+        </select>
+      </label>
+      <label class="hm-field"><span>Financing <button type="button" class="hm-info" aria-label="What this means" data-tip="Cash buyer, or an interest-only buy-to-let mortgage at the loan-to-value shown. The rate each month is the Bank of England average 2-year fixed rate (75% LTV) plus the buy-to-let premium below, as if the landlord refixed regularly.">i</button></span>
+        <select id="ctl-btl-ltv" aria-label="Financing">
+          <option value="0">Cash purchase</option><option value="0.5">50% mortgage</option><option value="0.6">60% mortgage</option><option value="0.75">75% mortgage</option>
+        </select>
+      </label>
+      <p class="hm-note" style="flex-basis:100%">Buy month = your From month, sell month = your To month, property type = your choice at the top. Change any cost assumption below.</p>
+      <label class="hm-field hm-asm"><span>Legal &amp; survey on purchase (£) <button type="button" class="hm-info" aria-label="What this means" data-tip="Conveyancing, searches and survey for a buy-to-let purchase. Typical range £1,500–£3,500.">i</button></span><input id="btl-buyFees" class="hm-btlin" type="number" step="100" value="2500" aria-label="Legal & survey on purchase (£)"></label>
+      <label class="hm-field hm-asm"><span>Mortgage arrangement fee (£) <button type="button" class="hm-info" aria-label="What this means" data-tip="Typical product fee on buy-to-let mortgages (commonly £1,495–£1,999). Only charged when a mortgage is used.">i</button></span><input id="btl-mortFee" class="hm-btlin" type="number" step="100" value="1995" aria-label="Mortgage arrangement fee (£)"></label>
+      <label class="hm-field hm-asm"><span>Buy-to-let rate premium (% pts) <button type="button" class="hm-info" aria-label="What this means" data-tip="Extra interest over the Bank of England 2-year fixed (75% LTV) rate. Moneyfacts buy-to-let averages ran about 0.7 points above it: 5.35% vs 4.58% in Sep 2024, 4.88% vs 4.19% in Sep 2025.">i</button></span><input id="btl-spread" class="hm-btlin" type="number" step="0.05" value="0.75" aria-label="Buy-to-let rate premium (% pts)"></label>
+      <label class="hm-field hm-asm"><span>Void periods (% of rent) <button type="button" class="hm-info" aria-label="What this means" data-tip="Rent lost between tenancies. 4% is about two weeks a year.">i</button></span><input id="btl-voidPct" class="hm-btlin" type="number" step="0.5" value="4" aria-label="Void periods (% of rent)"></label>
+      <label class="hm-field hm-asm"><span>Letting &amp; management (% of rent) <button type="button" class="hm-info" aria-label="What this means" data-tip="Full management is typically 8–15% of rent, London 12–15% (Landlord Studio, 2025). Set 0 if you self-manage.">i</button></span><input id="btl-mgmtPct" class="hm-btlin" type="number" step="0.5" value="12" aria-label="Letting & management (% of rent)"></label>
+      <label class="hm-field hm-asm"><span>Maintenance &amp; repairs (% of value a year) <button type="button" class="hm-info" aria-label="What this means" data-tip="Allowance for repairs, redecoration and replacements. Pegasus Insight (Q3 2025) finds landlords spend 25–45% of gross rent on running costs, with maintenance the largest item.">i</button></span><input id="btl-maintPct" class="hm-btlin" type="number" step="0.1" value="1" aria-label="Maintenance & repairs (% of value a year)"></label>
+      <label class="hm-field hm-asm"><span>Insurance &amp; compliance (£ a year, today) <button type="button" class="hm-info" aria-label="What this means" data-tip="Landlord insurance, gas safety, EICR, licensing and accountancy, in today’s money and scaled back by CPIH for earlier years.">i</button></span><input id="btl-fixedCosts" class="hm-btlin" type="number" step="50" value="600" aria-label="Insurance & compliance (£ a year, today)"></label>
+      <label class="hm-field hm-asm"><span>Estate agent on sale (%) <button type="button" class="hm-info" aria-label="What this means" data-tip="Selling agent fee including VAT.">i</button></span><input id="btl-sellPct" class="hm-btlin" type="number" step="0.1" value="1.5" aria-label="Estate agent on sale (%)"></label>
+      <label class="hm-field hm-asm"><span>Legal on sale (£) <button type="button" class="hm-info" aria-label="What this means" data-tip="Conveyancing when you sell.">i</button></span><input id="btl-sellFee" class="hm-btlin" type="number" step="100" value="1500" aria-label="Legal on sale (£)"></label>
+      <label class="hm-field hm-asm"><span>S&amp;P 500 fund cost (% a year) <button type="button" class="hm-info" aria-label="What this means" data-tip="Ongoing charge of a low-cost S&amp;P 500 index fund or ETF bought in pounds.">i</button></span><input id="btl-fundFee" class="hm-btlin" type="number" step="0.05" value="0.1" aria-label="S&P 500 fund cost (% a year)"></label>
+    </div>
+    <p class="hm-callout">Returns are before income tax and capital gains tax. Rents are ONS Price Index of Private Rents averages and prices are UK HPI averages for the same region and property type, so yields describe a typical home, not a specific deal. The S&amp;P 500 line invests exactly the same cash on the same day, converted to pounds, with dividends reinvested.</p>
+    <div class="hm-kpis" id="btl-kpis">
+      <div class="hm-kpi"><span class="hm-kl">Gross rental yield <button type="button" class="hm-info" aria-label="What this means" data-tip="Annual rent divided by purchase price, in your buy month.">i</button></span><b class="hm-kv" data-draw="bk" data-k="gy" data-source="rent">—</b><span class="hm-ks" data-draw="bk" data-k="gylabel" data-source="rent">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Net yield <button type="button" class="hm-info" aria-label="What this means" data-tip="Rent after voids, management, maintenance, insurance and compliance, before mortgage interest and tax, as a % of price.">i</button></span><b class="hm-kv" data-draw="bk" data-k="ny" data-source="rent">—</b><span class="hm-ks">Before finance and tax</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Buy-to-let return a year <button type="button" class="hm-info" aria-label="What this means" data-tip="Internal rate of return on every pound in and out: deposit, stamp duty and fees at the start, net rent each month, and sale proceeds after costs and repaying the mortgage at the end.">i</button></span><b class="hm-kv" data-draw="bk" data-k="irr" data-source="rent">—</b><span class="hm-ks" data-draw="bk" data-k="irrlabel" data-source="rent">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">S&amp;P 500 return a year <button type="button" class="hm-info" aria-label="What this means" data-tip="The same starting cash invested in the S&amp;P 500 in pounds, dividends reinvested, after the fund cost.">i</button></span><b class="hm-kv" data-draw="bk" data-k="sp" data-source="sp500">—</b><span class="hm-ks">Total return in £</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Difference <button type="button" class="hm-info" aria-label="What this means" data-tip="Buy-to-let return minus S&amp;P 500 return, in percentage points a year.">i</button></span><b class="hm-kv" data-draw="bk" data-k="gap" data-source="rent sp500">—</b><span class="hm-ks" data-draw="bk" data-k="gaplabel" data-source="rent sp500">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Stamp duty paid <button type="button" class="hm-info" aria-label="What this means" data-tip="SDLT at the higher rates for additional properties in force in your buy month: 3% surcharge from April 2016, 5% from 31 October 2024, on top of the bands then in force (including the 2020–21 holiday).">i</button></span><b class="hm-kv" data-draw="bk" data-k="sdlt" data-source="rent">—</b><span class="hm-ks" data-draw="bk" data-k="sdltlabel" data-source="rent">—</span></div>
+    </div>
+    <div class="hm-card" id="btl-chart-card">
+      <h2>What the same cash grew to <button type="button" class="hm-info" aria-label="What this means" data-tip="The buy-to-let line is what you would have if you sold that month: sale price after selling costs, minus the mortgage, plus all net rent collected. The S&amp;P 500 lines invest the same starting cash.">i</button></h2>
+      <div class="hm-legend">
+        <span><i class="hm-lg-line" style="background: var(--hm-s1)"></i>Buy-to-let (if sold that month)</span>
+        <span><i class="hm-lg-line" style="background: var(--hm-s3)"></i>S&amp;P 500, dividends reinvested (£)</span>
+        <span><i class="hm-lg-line" style="background: var(--hm-s5)"></i>S&amp;P 500, price only (£)</span>
+      </div>
+      <div class="hm-chart" data-draw="btlchart" data-source="rent sp500 hpi_headline"></div>
+    </div>
+    <div class="hm-grid">
+      <div class="hm-card" id="btl-bridge-card">
+        <h2>Where the money went <button type="button" class="hm-info" aria-label="What this means" data-tip="Totals over the whole holding period, in cash terms.">i</button></h2>
+        <div class="hm-tablewrap" data-draw="btlbridge" data-source="rent sp500"></div>
+      </div>
+      <div class="hm-card" id="btl-risk-card">
+        <h2>Return against risk <button type="button" class="hm-info" aria-label="What this means" data-tip="Volatility is the annualised standard deviation of monthly returns. Unlevered property returns use price change plus net rent. House price indices are smoothed averages, so property volatility is understated; one property is riskier than the index.">i</button></h2>
+        <div class="hm-tablewrap" data-draw="btlrisk" data-source="rent sp500"></div>
+        <p class="hm-note">Smoothing in house price indices hides much of the true ups and downs of owning one property, and leverage multiplies them. Treat property risk figures as a floor.</p>
+      </div>
+    </div>
+    <div class="hm-card" id="btl-income-card">
+      <h2>Income each year <button type="button" class="hm-info" aria-label="What this means" data-tip="Rental income is counted as cash you receive each month; it is not reinvested. The S&amp;P 500 columns show the dividends the same starting cash would have paid if you took them as income instead of reinvesting. Both are before tax.">i</button></h2>
+      <p class="hm-note" data-draw="btlincomenote" data-source="rent sp500">—</p>
+      <div class="hm-tablewrap" data-draw="btlincome" data-source="rent sp500"></div>
+    </div>
+    <div class="hm-card" id="btl-matrix-card">
+      <h2>Return a year by region and property type <button type="button" class="hm-info" aria-label="What this means" data-tip="Buy-to-let internal rate of return for each region and type over your period, with your financing and cost settings. Green beats the S&amp;P 500 over the same period; red falls short.">i</button></h2>
+      <div class="hm-tablewrap" data-draw="btlmatrix" data-source="rent sp500"></div>
+    </div>
+    <div class="hm-card" id="btl-yield-card">
+      <h2>Rental yields by region and property type <button type="button" class="hm-info" aria-label="What this means" data-tip="Gross yield = annual average rent (ONS) divided by average price (HPI), in your To month. Net yield deducts voids, management, maintenance and fixed costs.">i</button></h2>
+      <div class="hm-tablewrap" data-draw="btlyields" data-source="rent"></div>
+    </div>
+  </section>
+
+  <section class="hm-panel" id="btltax" data-panel="btltax" hidden>
+    <div class="hm-controls hm-sub">
+      <label class="hm-field"><span>Your income tax band <button type="button" class="hm-info" aria-label="What this means" data-tip="The marginal rate applied to all rental profit, dividends and gains. In practice large profits or gains can push a basic-rate taxpayer into the higher band, so the basic-rate view is a best case.">i</button></span>
+        <select id="ctl-tax-band" aria-label="Tax band"><option value="basic">Basic rate (20%)</option><option value="higher">Higher rate (40%)</option><option value="additional">Additional rate (45%)</option></select>
+      </label>
+      <label class="hm-field"><span>S&amp;P 500 held in <button type="button" class="hm-info" aria-label="What this means" data-tip="An ISA pays no tax on dividends or gains but only £20,000 a year can go in, so a large lump sum would take years to shelter. A general investment account pays dividend tax each year and capital gains tax on sale.">i</button></span>
+        <select id="ctl-tax-wrap" aria-label="S&amp;P 500 account"><option value="gia">General investment account</option><option value="isa">Stocks &amp; shares ISA</option></select>
+      </label>
+      <p class="hm-note" style="flex-basis:100%">Uses the region, financing and costs on the Buy-to-let tab, and the period and property type at the top. Individual ownership, not a limited company.</p>
+    </div>
+    <div class="hm-kpis" id="tax-kpis">
+      <div class="hm-kpi"><span class="hm-kl">Buy-to-let after tax <button type="button" class="hm-info" aria-label="What this means" data-tip="Internal rate of return after income tax on rental profit each tax year and capital gains tax on the sale.">i</button></span><b class="hm-kv" data-draw="tk" data-k="btl" data-source="rent">—</b><span class="hm-ks" data-draw="tk" data-k="btlpre" data-source="rent">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">S&amp;P 500 after tax <button type="button" class="hm-info" aria-label="What this means" data-tip="Return a year after dividend tax each year (reinvesting what is left) and capital gains tax on sale; no tax in an ISA.">i</button></span><b class="hm-kv" data-draw="tk" data-k="sp" data-source="sp500">—</b><span class="hm-ks" data-draw="tk" data-k="sppre" data-source="sp500">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Difference after tax <button type="button" class="hm-info" aria-label="What this means" data-tip="Buy-to-let after-tax return minus S&amp;P 500 after-tax return, in percentage points a year.">i</button></span><b class="hm-kv" data-draw="tk" data-k="gap" data-source="rent sp500">—</b><span class="hm-ks" data-draw="tk" data-k="gaplabel" data-source="rent sp500">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Income tax on rent <button type="button" class="hm-info" aria-label="What this means" data-tip="Total over all tax years. Since 2020/21 mortgage interest is not deductible; you get a 20% tax credit instead (Section 24, phased in from 2017/18).">i</button></span><b class="hm-kv" data-draw="tk" data-k="inctax" data-source="rent">—</b><span class="hm-ks">All tax years held</span></div>
+      <div class="hm-kpi"><span class="hm-kl">CGT on the property <button type="button" class="hm-info" aria-label="What this means" data-tip="Gain = sale price less selling costs, less purchase price, stamp duty and purchase fees, less the annual exempt amount. Residential rates: 18% basic; 28% higher until 5 April 2024, then 24%.">i</button></span><b class="hm-kv" data-draw="tk" data-k="btlcgt" data-source="rent">—</b><span class="hm-ks" data-draw="tk" data-k="btlcgtlabel" data-source="rent">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Tax on the S&amp;P 500 <button type="button" class="hm-info" aria-label="What this means" data-tip="Dividend tax over all years plus capital gains tax on sale. Share CGT rates: 10%/20% until 29 October 2024, then 18%/24%.">i</button></span><b class="hm-kv" data-draw="tk" data-k="sptax" data-source="sp500">—</b><span class="hm-ks" data-draw="tk" data-k="sptaxlabel" data-source="sp500">—</span></div>
+    </div>
+    <div class="hm-card" id="tax-compare-card">
+      <h2>Before and after tax <button type="button" class="hm-info" aria-label="What this means" data-tip="Cash put in is the same for both. End value is everything you get back over the period after the tax shown.">i</button></h2>
+      <div class="hm-tablewrap" data-draw="taxcompare" data-source="rent sp500"></div>
+    </div>
+    <div class="hm-card" id="tax-years-card">
+      <h2>Tax year by tax year <button type="button" class="hm-info" aria-label="What this means" data-tip="Rental profit is rent less voids, management, maintenance, insurance and compliance. Share of finance costs deductible: 100% to 2016/17, 75% in 2017/18, 50% in 2018/19, 25% in 2019/20, none from 2020/21 (replaced by a 20% credit). Losses carry forward.">i</button></h2>
+      <div class="hm-tablewrap hm-scroll" data-draw="taxyears" data-source="rent sp500"></div>
+    </div>
+    <div class="hm-card">
+      <h2>Tax rules used</h2>
+      <ul class="hm-note" style="margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px">
+        <li>Income tax on rental profit at 20%, 40% or 45%. Mortgage interest relief restricted under Section 24: phased in from 2017/18, full basic-rate credit only from 2020/21. Property income rates rise by 2 points from April 2027 (Budget 2025), after this period ends.</li>
+        <li>Capital gains: residential property 18% basic rate, 28% higher rate until 5 April 2024 and 24% after; shares 10%/20% until 29 October 2024 and 18%/24% after. Annual exempt amount from £11,100 (2015/16) down to £3,000 (from 2024/25).</li>
+        <li>Dividends: before April 2016, 0% / 25% / 30.6% effective; then 7.5% / 32.5% / 38.1%; from April 2022 8.75% / 33.75% / 39.35%. Dividend allowance £5,000 (2016/17–2017/18), £2,000 (to 2022/23), £1,000 (2023/24), £500 (from 2024/25).</li>
+        <li>Simplifications: tax years are approximated to whole months; income tax is paid at each tax-year end; US withholding tax inside funds and personal allowances are not modelled; buy-to-let in a limited company is taxed differently.</li>
+      </ul>
+    </div>
+  </section>
   <section class="hm-panel" id="local" data-panel="local" hidden>
     <div class="hm-controls hm-sub">
       <label class="hm-field"><span>Search areas</span><input id="ctl-local-q" type="search" placeholder="e.g. Essex, Leeds, Camden" aria-label="Search local areas"></label>
@@ -429,6 +541,10 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
         <div>
           <h3>Bank of England</h3>
           <p>Monthly average Bank Rate (IUMABEDR), quoted rates on 2-year fixed 75% LTV (IUMBV34), 5-year fixed 75% LTV (IUMBV42), 2-year fixed 90% LTV (IUMB482) and revert-to rate (IUMTLMV) mortgages, and approvals for house purchase (LPMVTVX), January 2015 to September 2026.</p>
+        </div>
+        <div>
+          <h3>Rents and the S&amp;P 500</h3>
+          <p>ONS Price Index of Private Rents (released 21 October 2026): average monthly rents by region and property type, January 2015 to September 2026. S&amp;P 500 monthly average prices (S&amp;P / Robert Shiller data via datahub.io) and dividend yields (multpl.com), converted to pounds at the Bank of England monthly average US$/£ rate (XUMAUSS). Mortgage rates: Bank of England IUMBV34 plus a buy-to-let premium based on Moneyfacts averages.</p>
         </div>
         <div>
           <h3>Inflation</h3>
@@ -100591,7 +100707,2299 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
 2026-08,143.6,143.4
 2026-09,144.1,144.0
 </script>
-<script>(() => {
+<script type="text/csv" id="csv-rent">month,area,rent,rent_1bed,rent_2bed,rent_3bed,rent_4bed,rent_detached,rent_semi,rent_terraced,rent_flat
+2015-01,United Kingdom,910,736,840,916,1371,1020,897,893,904
+2015-02,United Kingdom,912,738,842,918,1372,1022,899,894,906
+2015-03,United Kingdom,915,740,844,920,1378,1025,901,897,909
+2015-04,United Kingdom,918,744,847,923,1382,1028,904,900,914
+2015-05,United Kingdom,922,748,851,927,1387,1031,908,904,918
+2015-06,United Kingdom,924,749,853,929,1387,1033,909,905,921
+2015-07,United Kingdom,926,752,855,931,1390,1036,911,906,923
+2015-08,United Kingdom,930,754,858,934,1398,1040,914,909,927
+2015-09,United Kingdom,933,756,861,937,1405,1043,918,913,930
+2015-10,United Kingdom,935,758,862,939,1406,1044,919,914,932
+2015-11,United Kingdom,936,759,864,941,1410,1048,921,916,933
+2015-12,United Kingdom,939,761,866,944,1413,1050,923,918,935
+2016-01,United Kingdom,941,764,869,946,1414,1051,925,920,939
+2016-02,United Kingdom,942,766,871,948,1415,1054,926,921,941
+2016-03,United Kingdom,946,769,873,952,1421,1058,930,925,944
+2016-04,United Kingdom,949,771,876,955,1424,1062,933,927,947
+2016-05,United Kingdom,952,774,879,957,1427,1065,936,929,950
+2016-06,United Kingdom,954,775,880,960,1434,1069,938,933,952
+2016-07,United Kingdom,958,778,883,964,1441,1072,942,936,956
+2016-08,United Kingdom,961,780,885,967,1447,1077,945,939,958
+2016-09,United Kingdom,963,783,888,970,1452,1080,947,942,961
+2016-10,United Kingdom,966,784,889,972,1455,1084,950,944,962
+2016-11,United Kingdom,968,786,892,975,1458,1087,953,947,965
+2016-12,United Kingdom,970,787,893,977,1462,1090,955,949,966
+2017-01,United Kingdom,972,789,895,979,1465,1092,957,950,968
+2017-02,United Kingdom,973,789,896,981,1466,1093,958,952,968
+2017-03,United Kingdom,975,791,897,983,1469,1095,960,954,969
+2017-04,United Kingdom,977,793,899,985,1472,1099,962,955,972
+2017-05,United Kingdom,977,793,899,985,1473,1100,962,955,971
+2017-06,United Kingdom,979,795,901,987,1475,1102,964,957,974
+2017-07,United Kingdom,982,797,904,990,1480,1105,967,960,976
+2017-08,United Kingdom,982,798,904,991,1480,1108,968,960,976
+2017-09,United Kingdom,982,797,904,991,1481,1110,968,960,975
+2017-10,United Kingdom,983,798,905,993,1480,1111,969,961,976
+2017-11,United Kingdom,984,799,906,995,1480,1112,970,962,977
+2017-12,United Kingdom,985,799,906,995,1483,1114,971,963,977
+2018-01,United Kingdom,984,799,907,995,1479,1115,969,961,977
+2018-02,United Kingdom,986,800,907,997,1483,1117,972,963,978
+2018-03,United Kingdom,984,799,907,996,1481,1118,971,962,976
+2018-04,United Kingdom,984,799,907,997,1481,1119,972,962,976
+2018-05,United Kingdom,985,799,908,997,1481,1121,972,962,975
+2018-06,United Kingdom,985,799,908,999,1483,1122,973,963,976
+2018-07,United Kingdom,987,800,910,1001,1485,1123,975,965,978
+2018-08,United Kingdom,989,801,912,1003,1490,1125,978,967,979
+2018-09,United Kingdom,990,802,912,1004,1492,1128,980,969,979
+2018-10,United Kingdom,993,803,913,1007,1499,1131,983,971,981
+2018-11,United Kingdom,995,805,916,1009,1503,1133,985,973,983
+2018-12,United Kingdom,997,805,917,1010,1509,1134,987,976,984
+2019-01,United Kingdom,997,806,917,1011,1509,1134,988,977,984
+2019-02,United Kingdom,999,808,919,1013,1511,1135,990,979,987
+2019-03,United Kingdom,1000,809,919,1013,1511,1135,990,980,987
+2019-04,United Kingdom,1000,810,920,1014,1509,1136,991,980,987
+2019-05,United Kingdom,1005,815,923,1018,1516,1140,995,984,993
+2019-06,United Kingdom,1005,815,924,1017,1515,1141,995,984,993
+2019-07,United Kingdom,1006,817,925,1019,1514,1143,996,985,995
+2019-08,United Kingdom,1009,819,927,1020,1519,1146,998,988,996
+2019-09,United Kingdom,1012,821,929,1023,1526,1149,1002,991,999
+2019-10,United Kingdom,1014,824,930,1025,1529,1152,1004,994,1001
+2019-11,United Kingdom,1016,826,932,1026,1531,1154,1005,995,1004
+2019-12,United Kingdom,1018,828,933,1027,1532,1155,1007,997,1005
+2020-01,United Kingdom,1019,830,935,1029,1530,1157,1008,999,1007
+2020-02,United Kingdom,1021,832,937,1031,1532,1158,1009,1000,1009
+2020-03,United Kingdom,1022,833,938,1032,1533,1158,1011,1001,1011
+2020-04,United Kingdom,1022,833,938,1032,1532,1160,1011,1000,1010
+2020-05,United Kingdom,1023,834,939,1034,1534,1162,1013,1002,1011
+2020-06,United Kingdom,1024,835,940,1035,1535,1163,1012,1002,1012
+2020-07,United Kingdom,1025,836,941,1036,1537,1165,1014,1004,1013
+2020-08,United Kingdom,1026,837,942,1037,1540,1166,1015,1005,1013
+2020-09,United Kingdom,1027,837,942,1038,1544,1167,1016,1007,1014
+2020-10,United Kingdom,1029,838,944,1040,1546,1169,1018,1009,1015
+2020-11,United Kingdom,1029,838,944,1041,1544,1172,1018,1009,1015
+2020-12,United Kingdom,1030,837,944,1042,1544,1173,1019,1010,1014
+2021-01,United Kingdom,1030,838,946,1044,1543,1176,1020,1011,1015
+2021-02,United Kingdom,1032,838,947,1047,1550,1178,1022,1014,1015
+2021-03,United Kingdom,1034,838,948,1048,1556,1183,1025,1016,1015
+2021-04,United Kingdom,1033,837,947,1049,1558,1185,1026,1016,1013
+2021-05,United Kingdom,1034,836,947,1050,1561,1190,1029,1018,1011
+2021-06,United Kingdom,1036,837,949,1053,1565,1194,1031,1020,1012
+2021-07,United Kingdom,1037,836,949,1054,1568,1198,1034,1022,1011
+2021-08,United Kingdom,1039,837,951,1058,1575,1202,1036,1026,1013
+2021-09,United Kingdom,1042,838,953,1060,1585,1206,1040,1030,1014
+2021-10,United Kingdom,1046,840,956,1065,1594,1211,1044,1034,1017
+2021-11,United Kingdom,1049,841,959,1069,1601,1216,1048,1038,1019
+2021-12,United Kingdom,1055,845,963,1075,1613,1224,1054,1044,1023
+2022-01,United Kingdom,1059,847,967,1080,1618,1230,1058,1048,1026
+2022-02,United Kingdom,1063,849,971,1084,1627,1235,1062,1053,1030
+2022-03,United Kingdom,1066,852,974,1088,1632,1241,1066,1057,1033
+2022-04,United Kingdom,1071,855,978,1093,1636,1246,1069,1061,1037
+2022-05,United Kingdom,1075,858,981,1097,1645,1252,1074,1065,1041
+2022-06,United Kingdom,1079,861,985,1101,1652,1258,1078,1069,1044
+2022-07,United Kingdom,1084,866,989,1106,1660,1264,1082,1074,1049
+2022-08,United Kingdom,1089,870,994,1111,1668,1269,1088,1080,1054
+2022-09,United Kingdom,1096,875,999,1118,1680,1274,1094,1087,1061
+2022-10,United Kingdom,1100,878,1003,1123,1688,1281,1098,1092,1065
+2022-11,United Kingdom,1107,884,1010,1130,1698,1288,1105,1099,1072
+2022-12,United Kingdom,1114,889,1015,1136,1706,1296,1111,1104,1079
+2023-01,United Kingdom,1120,894,1021,1143,1716,1304,1117,1111,1085
+2023-02,United Kingdom,1126,899,1027,1149,1724,1311,1123,1117,1092
+2023-03,United Kingdom,1133,904,1032,1155,1735,1318,1130,1123,1098
+2023-04,United Kingdom,1142,912,1041,1164,1746,1327,1138,1131,1108
+2023-05,United Kingdom,1152,921,1051,1174,1760,1336,1147,1139,1120
+2023-06,United Kingdom,1161,928,1058,1183,1775,1345,1156,1147,1129
+2023-07,United Kingdom,1169,935,1066,1192,1788,1355,1164,1155,1138
+2023-08,United Kingdom,1177,942,1073,1200,1800,1364,1171,1163,1146
+2023-09,United Kingdom,1185,949,1080,1207,1810,1374,1179,1170,1153
+2023-10,United Kingdom,1193,955,1087,1215,1822,1384,1187,1178,1161
+2023-11,United Kingdom,1200,961,1095,1222,1828,1393,1194,1185,1169
+2023-12,United Kingdom,1207,968,1101,1230,1836,1401,1201,1192,1176
+2024-01,United Kingdom,1216,976,1109,1239,1850,1412,1210,1200,1185
+2024-02,United Kingdom,1227,985,1119,1250,1864,1422,1220,1211,1196
+2024-03,United Kingdom,1236,993,1127,1259,1876,1430,1229,1219,1206
+2024-04,United Kingdom,1243,1000,1135,1266,1883,1437,1236,1226,1214
+2024-05,United Kingdom,1252,1007,1142,1274,1896,1444,1243,1234,1223
+2024-06,United Kingdom,1260,1015,1150,1283,1904,1452,1253,1242,1231
+2024-07,United Kingdom,1268,1022,1157,1291,1913,1461,1261,1250,1240
+2024-08,United Kingdom,1275,1029,1164,1298,1921,1468,1267,1257,1247
+2024-09,United Kingdom,1284,1037,1172,1307,1930,1477,1275,1265,1256
+2024-10,United Kingdom,1295,1047,1182,1317,1947,1488,1286,1276,1268
+2024-11,United Kingdom,1308,1059,1194,1331,1967,1498,1298,1289,1283
+2024-12,United Kingdom,1316,1065,1201,1338,1976,1505,1304,1295,1291
+2025-01,United Kingdom,1321,1070,1207,1344,1984,1512,1310,1301,1296
+2025-02,United Kingdom,1327,1074,1212,1349,1991,1517,1316,1306,1301
+2025-03,United Kingdom,1332,1079,1217,1355,1997,1522,1321,1312,1306
+2025-04,United Kingdom,1335,1082,1220,1358,2000,1524,1324,1316,1309
+2025-05,United Kingdom,1339,1086,1225,1363,2003,1529,1329,1320,1314
+2025-06,United Kingdom,1344,1091,1230,1368,2006,1533,1332,1325,1318
+2025-07,United Kingdom,1343,1091,1230,1367,2003,1531,1331,1324,1318
+2025-08,United Kingdom,1348,1094,1233,1372,2011,1536,1337,1331,1321
+2025-09,United Kingdom,1354,1099,1239,1379,2020,1543,1343,1338,1327
+2025-10,United Kingdom,1360,1103,1243,1386,2026,1550,1349,1344,1331
+2025-11,United Kingdom,1366,1107,1249,1392,2039,1559,1356,1350,1335
+2025-12,United Kingdom,1367,1109,1250,1395,2039,1562,1358,1354,1336
+2026-01,United Kingdom,1367,1109,1251,1396,2038,1564,1360,1355,1334
+2026-02,United Kingdom,1374,1115,1257,1402,2047,1567,1365,1360,1342
+2026-03,United Kingdom,1377,1117,1260,1405,2048,1569,1369,1364,1345
+2026-04,United Kingdom,1381,1121,1264,1410,2054,1571,1373,1368,1350
+2026-05,United Kingdom,1383,1123,1266,1413,2057,1572,1376,1371,1351
+2026-06,United Kingdom,1388,1127,1271,1418,2061,1577,1381,1375,1355
+2026-07,United Kingdom,1393,1132,1275,1422,2068,1582,1385,1379,1361
+2026-08,United Kingdom,1400,1136,1282,1431,2080,1589,1393,1387,1367
+2026-09,United Kingdom,1406,1140,1287,1438,2089,1597,1401,1394,1371
+2015-01,England,950,773,874,955,1440,1061,936,925,953
+2015-02,England,952,775,876,957,1440,1063,938,926,955
+2015-03,England,955,777,879,960,1447,1066,940,929,958
+2015-04,England,959,782,882,964,1452,1070,944,932,964
+2015-05,England,963,785,886,968,1456,1073,947,936,969
+2015-06,England,965,787,889,970,1457,1075,949,938,972
+2015-07,England,967,790,890,972,1460,1079,951,939,975
+2015-08,England,971,793,894,975,1469,1083,954,942,979
+2015-09,England,975,795,897,979,1477,1087,958,947,983
+2015-10,England,977,797,898,981,1478,1088,960,948,984
+2015-11,England,979,797,900,984,1483,1092,962,950,986
+2015-12,England,981,800,903,986,1486,1095,964,952,989
+2016-01,England,983,804,906,989,1486,1097,966,953,993
+2016-02,England,985,805,908,992,1488,1099,967,955,995
+2016-03,England,989,809,911,996,1494,1104,972,959,999
+2016-04,England,992,811,914,999,1498,1108,974,961,1002
+2016-05,England,996,814,917,1002,1502,1112,978,964,1006
+2016-06,England,999,816,919,1005,1510,1116,981,968,1008
+2016-07,England,1003,819,922,1009,1518,1120,985,972,1013
+2016-08,England,1006,821,925,1012,1524,1125,988,974,1015
+2016-09,England,1009,824,927,1015,1529,1128,990,978,1018
+2016-10,England,1011,826,929,1018,1533,1133,993,980,1020
+2016-11,England,1014,827,932,1022,1536,1136,996,983,1023
+2016-12,England,1016,829,934,1024,1541,1139,999,985,1025
+2017-01,England,1018,831,936,1026,1544,1141,1001,987,1027
+2017-02,England,1019,831,936,1028,1544,1142,1002,988,1027
+2017-03,England,1021,833,937,1030,1547,1145,1004,990,1028
+2017-04,England,1023,835,940,1031,1550,1148,1006,992,1030
+2017-05,England,1023,835,940,1032,1550,1149,1006,991,1030
+2017-06,England,1025,838,942,1034,1552,1151,1008,993,1032
+2017-07,England,1028,839,944,1037,1557,1154,1011,996,1035
+2017-08,England,1028,840,944,1038,1556,1156,1012,997,1034
+2017-09,England,1027,839,944,1038,1557,1158,1011,996,1033
+2017-10,England,1029,841,945,1039,1555,1158,1013,997,1034
+2017-11,England,1030,841,946,1041,1555,1159,1014,998,1035
+2017-12,England,1030,842,947,1041,1558,1161,1015,999,1035
+2018-01,England,1029,841,947,1041,1554,1162,1013,997,1034
+2018-02,England,1031,842,948,1043,1557,1164,1016,999,1035
+2018-03,England,1029,841,947,1042,1553,1163,1014,998,1033
+2018-04,England,1029,841,947,1042,1552,1165,1015,998,1032
+2018-05,England,1029,841,947,1042,1552,1166,1015,998,1032
+2018-06,England,1030,841,948,1044,1553,1167,1016,999,1032
+2018-07,England,1032,842,950,1045,1555,1169,1018,1000,1035
+2018-08,England,1034,843,951,1047,1561,1171,1021,1003,1036
+2018-09,England,1035,844,952,1049,1563,1173,1023,1005,1036
+2018-10,England,1038,845,953,1052,1570,1177,1026,1007,1037
+2018-11,England,1040,847,956,1054,1574,1179,1028,1009,1040
+2018-12,England,1042,847,957,1055,1580,1180,1031,1012,1042
+2019-01,England,1043,848,957,1056,1580,1181,1032,1013,1041
+2019-02,England,1045,851,959,1058,1583,1182,1034,1015,1044
+2019-03,England,1045,852,959,1058,1582,1180,1033,1016,1045
+2019-04,England,1046,852,959,1059,1580,1181,1034,1017,1044
+2019-05,England,1051,858,963,1063,1587,1184,1039,1021,1051
+2019-06,England,1051,858,964,1062,1585,1185,1039,1020,1051
+2019-07,England,1052,860,965,1064,1584,1186,1039,1022,1053
+2019-08,England,1054,862,967,1066,1589,1189,1042,1024,1054
+2019-09,England,1058,865,969,1068,1597,1192,1046,1028,1057
+2019-10,England,1060,867,971,1071,1600,1194,1048,1030,1060
+2019-11,England,1062,869,973,1072,1603,1196,1050,1032,1062
+2019-12,England,1064,872,974,1073,1603,1197,1051,1034,1064
+2020-01,England,1065,873,975,1075,1600,1198,1052,1035,1066
+2020-02,England,1067,876,977,1077,1603,1200,1054,1037,1068
+2020-03,England,1068,878,978,1078,1603,1200,1055,1038,1070
+2020-04,England,1067,877,978,1078,1602,1201,1055,1037,1068
+2020-05,England,1069,878,979,1080,1603,1203,1057,1038,1070
+2020-06,England,1069,879,980,1080,1603,1205,1057,1039,1070
+2020-07,England,1071,880,981,1082,1606,1206,1058,1040,1072
+2020-08,England,1072,881,982,1083,1609,1207,1059,1042,1072
+2020-09,England,1073,881,983,1084,1613,1209,1061,1044,1073
+2020-10,England,1075,882,984,1086,1616,1212,1063,1046,1074
+2020-11,England,1075,882,984,1087,1613,1213,1063,1046,1073
+2020-12,England,1075,881,985,1088,1613,1215,1064,1047,1073
+2021-01,England,1076,882,986,1090,1611,1217,1064,1048,1073
+2021-02,England,1078,882,988,1092,1618,1220,1067,1051,1074
+2021-03,England,1079,883,988,1094,1624,1224,1069,1053,1073
+2021-04,England,1078,881,987,1094,1625,1226,1070,1053,1071
+2021-05,England,1079,879,987,1095,1627,1230,1073,1054,1068
+2021-06,England,1081,880,989,1098,1631,1235,1075,1057,1070
+2021-07,England,1082,880,989,1100,1635,1239,1077,1059,1068
+2021-08,England,1084,881,991,1103,1642,1243,1080,1062,1070
+2021-09,England,1087,881,993,1106,1654,1248,1084,1067,1071
+2021-10,England,1091,883,996,1111,1664,1254,1089,1072,1074
+2021-11,England,1095,884,999,1115,1671,1258,1092,1075,1076
+2021-12,England,1100,888,1004,1121,1683,1266,1098,1082,1080
+2022-01,England,1104,890,1007,1126,1687,1273,1102,1086,1083
+2022-02,England,1109,892,1011,1131,1697,1278,1107,1091,1087
+2022-03,England,1112,895,1014,1135,1703,1283,1110,1095,1090
+2022-04,England,1116,899,1018,1139,1707,1288,1113,1099,1095
+2022-05,England,1120,901,1021,1143,1715,1294,1118,1103,1098
+2022-06,England,1124,905,1025,1147,1722,1300,1122,1107,1102
+2022-07,England,1130,909,1030,1152,1730,1306,1126,1112,1107
+2022-08,England,1135,914,1035,1158,1739,1311,1132,1118,1112
+2022-09,England,1142,919,1040,1164,1750,1316,1138,1125,1119
+2022-10,England,1146,922,1043,1169,1759,1322,1142,1130,1122
+2022-11,England,1153,927,1050,1176,1769,1329,1149,1138,1130
+2022-12,England,1160,933,1056,1183,1777,1337,1156,1143,1137
+2023-01,England,1166,938,1062,1190,1788,1345,1162,1150,1143
+2023-02,England,1173,943,1067,1195,1795,1351,1167,1156,1150
+2023-03,England,1179,948,1072,1201,1806,1358,1175,1162,1156
+2023-04,England,1188,956,1082,1210,1817,1367,1183,1170,1166
+2023-05,England,1198,966,1092,1221,1831,1374,1192,1179,1179
+2023-06,England,1207,973,1099,1229,1845,1383,1201,1186,1189
+2023-07,England,1216,980,1107,1238,1859,1393,1209,1194,1198
+2023-08,England,1224,988,1114,1246,1871,1401,1217,1203,1206
+2023-09,England,1232,994,1121,1254,1882,1411,1225,1210,1214
+2023-10,England,1240,1001,1128,1261,1894,1420,1233,1218,1222
+2023-11,England,1247,1007,1136,1269,1901,1428,1240,1224,1230
+2023-12,England,1255,1014,1143,1277,1909,1436,1247,1232,1238
+2024-01,England,1264,1023,1151,1286,1923,1447,1256,1240,1247
+2024-02,England,1276,1033,1161,1297,1937,1457,1267,1251,1259
+2024-03,England,1285,1042,1171,1307,1949,1466,1277,1260,1270
+2024-04,England,1293,1050,1178,1314,1957,1473,1285,1267,1279
+2024-05,England,1302,1057,1186,1323,1970,1481,1292,1276,1288
+2024-06,England,1311,1065,1195,1332,1978,1491,1302,1284,1297
+2024-07,England,1319,1073,1202,1341,1987,1499,1311,1292,1306
+2024-08,England,1327,1081,1210,1348,1995,1506,1318,1299,1315
+2024-09,England,1336,1089,1218,1357,2004,1516,1326,1308,1324
+2024-10,England,1348,1099,1229,1369,2022,1527,1337,1319,1337
+2024-11,England,1362,1112,1242,1383,2044,1538,1350,1333,1354
+2024-12,England,1370,1119,1249,1390,2054,1545,1356,1340,1362
+2025-01,England,1375,1124,1255,1396,2061,1553,1362,1345,1367
+2025-02,England,1381,1128,1260,1402,2067,1557,1368,1351,1373
+2025-03,England,1386,1133,1265,1407,2072,1562,1373,1356,1378
+2025-04,England,1390,1137,1269,1411,2076,1565,1376,1360,1381
+2025-05,England,1394,1141,1274,1416,2078,1570,1381,1365,1386
+2025-06,England,1399,1147,1279,1421,2082,1575,1384,1369,1391
+2025-07,England,1398,1147,1279,1420,2077,1573,1383,1369,1391
+2025-08,England,1403,1150,1283,1426,2085,1578,1390,1375,1394
+2025-09,England,1410,1155,1289,1433,2096,1586,1396,1382,1400
+2025-10,England,1416,1159,1293,1440,2103,1593,1402,1389,1404
+2025-11,England,1422,1163,1299,1447,2118,1603,1410,1396,1409
+2025-12,England,1424,1164,1300,1450,2117,1606,1412,1399,1409
+2026-01,England,1423,1164,1300,1450,2115,1608,1414,1400,1406
+2026-02,England,1430,1170,1307,1456,2124,1612,1420,1406,1414
+2026-03,England,1434,1174,1311,1461,2125,1615,1423,1410,1418
+2026-04,England,1438,1178,1315,1466,2132,1619,1427,1415,1423
+2026-05,England,1442,1180,1318,1470,2135,1622,1431,1418,1426
+2026-06,England,1446,1184,1323,1475,2140,1626,1436,1422,1431
+2026-07,England,1451,1190,1328,1479,2146,1630,1441,1427,1437
+2026-08,England,1459,1195,1335,1489,2161,1640,1449,1435,1444
+2026-09,England,1466,1199,1341,1497,2170,1649,1458,1443,1449
+2015-01,Wales,541,413,505,568,792,683,558,530,462
+2015-02,Wales,544,413,506,570,804,685,560,534,462
+2015-03,Wales,544,414,507,570,803,685,560,535,463
+2015-04,Wales,545,415,507,571,805,686,561,535,464
+2015-05,Wales,546,414,508,572,806,687,562,536,464
+2015-06,Wales,547,415,509,573,807,689,563,537,465
+2015-07,Wales,547,416,509,572,807,689,564,537,465
+2015-08,Wales,545,415,508,571,805,687,562,536,464
+2015-09,Wales,545,415,508,571,804,687,562,535,464
+2015-10,Wales,546,416,509,572,803,688,562,536,465
+2015-11,Wales,547,418,510,573,804,688,564,538,466
+2015-12,Wales,547,417,510,573,805,687,564,538,467
+2016-01,Wales,548,417,510,574,810,687,564,539,467
+2016-02,Wales,548,417,510,574,812,689,565,539,466
+2016-03,Wales,549,418,510,574,817,689,565,540,466
+2016-04,Wales,549,418,511,575,810,688,565,539,468
+2016-05,Wales,548,418,511,574,809,689,564,539,467
+2016-06,Wales,548,418,511,574,810,689,564,539,467
+2016-07,Wales,549,419,512,575,808,689,564,540,468
+2016-08,Wales,551,421,513,577,812,692,567,541,469
+2016-09,Wales,553,421,514,579,821,695,570,544,469
+2016-10,Wales,553,421,514,579,824,696,572,545,469
+2016-11,Wales,554,420,515,580,827,696,572,546,469
+2016-12,Wales,555,420,515,580,829,698,573,547,469
+2017-01,Wales,556,422,517,581,832,700,574,548,471
+2017-02,Wales,557,422,517,583,835,701,575,549,472
+2017-03,Wales,558,422,518,583,834,703,576,550,472
+2017-04,Wales,558,422,518,584,832,703,575,550,472
+2017-05,Wales,559,422,519,585,834,705,576,551,473
+2017-06,Wales,563,424,521,589,848,708,580,557,474
+2017-07,Wales,565,424,522,591,858,711,582,560,475
+2017-08,Wales,565,426,522,591,857,711,582,560,477
+2017-09,Wales,566,427,524,592,858,713,583,560,478
+2017-10,Wales,567,428,525,592,859,714,583,561,478
+2017-11,Wales,568,431,526,593,854,714,584,560,481
+2017-12,Wales,569,431,527,594,861,717,585,562,482
+2018-01,Wales,568,432,526,593,857,716,584,560,481
+2018-02,Wales,568,431,525,593,857,718,584,559,480
+2018-03,Wales,570,430,528,595,865,719,586,563,481
+2018-04,Wales,571,432,528,595,869,721,587,564,483
+2018-05,Wales,572,433,530,597,872,723,589,564,484
+2018-06,Wales,573,433,530,597,873,723,590,564,485
+2018-07,Wales,574,434,532,598,874,725,591,565,486
+2018-08,Wales,575,434,533,600,875,726,592,566,486
+2018-09,Wales,576,435,534,602,874,728,594,568,487
+2018-10,Wales,576,436,534,602,875,728,595,568,487
+2018-11,Wales,577,437,534,603,876,729,596,568,488
+2018-12,Wales,579,436,536,605,887,732,598,572,488
+2019-01,Wales,580,436,536,606,888,735,599,573,488
+2019-02,Wales,581,437,537,608,884,737,600,572,488
+2019-03,Wales,582,437,538,609,885,738,601,573,489
+2019-04,Wales,584,439,540,611,887,740,604,575,491
+2019-05,Wales,583,440,539,610,885,740,603,574,490
+2019-06,Wales,584,440,541,610,887,742,604,575,492
+2019-07,Wales,584,440,540,609,888,740,602,575,492
+2019-08,Wales,585,441,541,611,893,743,604,577,492
+2019-09,Wales,589,443,545,616,898,748,609,581,496
+2019-10,Wales,590,444,546,616,897,749,609,581,496
+2019-11,Wales,592,444,548,618,900,752,611,583,497
+2019-12,Wales,592,445,548,619,904,753,611,584,498
+2020-01,Wales,593,445,549,620,903,753,612,585,498
+2020-02,Wales,593,446,550,620,900,754,613,585,499
+2020-03,Wales,594,446,550,621,899,754,613,585,499
+2020-04,Wales,594,446,550,621,901,754,613,586,499
+2020-05,Wales,596,448,552,624,907,758,616,589,501
+2020-06,Wales,598,449,553,625,905,759,616,590,502
+2020-07,Wales,600,451,556,627,907,762,619,593,505
+2020-08,Wales,600,452,556,628,905,761,619,592,505
+2020-09,Wales,599,450,554,627,902,762,619,591,503
+2020-10,Wales,599,452,555,627,899,763,619,590,504
+2020-11,Wales,601,452,557,628,905,766,621,592,505
+2020-12,Wales,602,452,558,629,908,768,622,593,506
+2021-01,Wales,604,452,558,631,917,771,624,597,506
+2021-02,Wales,605,452,559,633,915,770,625,598,506
+2021-03,Wales,606,452,559,633,918,772,626,599,506
+2021-04,Wales,606,452,560,634,917,769,627,600,506
+2021-05,Wales,608,455,562,636,920,772,629,602,508
+2021-06,Wales,610,455,563,637,922,774,631,603,510
+2021-07,Wales,609,455,563,637,920,773,630,603,509
+2021-08,Wales,612,457,565,639,931,776,634,606,511
+2021-09,Wales,613,457,565,640,932,777,634,606,512
+2021-10,Wales,614,458,567,641,936,780,637,608,513
+2021-11,Wales,618,460,570,645,944,782,640,612,516
+2021-12,Wales,620,462,572,646,946,782,642,613,518
+2022-01,Wales,621,463,573,648,949,785,644,615,519
+2022-02,Wales,622,465,574,650,948,787,646,616,520
+2022-03,Wales,623,469,577,652,919,790,649,611,524
+2022-04,Wales,624,470,579,654,918,793,651,612,524
+2022-05,Wales,629,474,582,658,924,802,654,616,528
+2022-06,Wales,631,476,585,661,932,805,656,619,531
+2022-07,Wales,634,476,587,664,937,808,659,622,532
+2022-08,Wales,639,479,591,668,947,816,664,626,536
+2022-09,Wales,644,484,596,674,955,823,670,632,540
+2022-10,Wales,647,487,600,680,935,827,674,631,544
+2022-11,Wales,651,490,604,683,948,831,678,635,548
+2022-12,Wales,654,492,607,687,952,835,680,639,551
+2023-01,Wales,659,496,611,692,960,843,685,643,555
+2023-02,Wales,663,500,615,696,966,850,689,647,558
+2023-03,Wales,667,504,619,700,972,855,692,651,563
+2023-04,Wales,675,510,626,707,985,866,700,658,570
+2023-05,Wales,678,512,629,711,990,872,703,660,573
+2023-06,Wales,687,518,637,720,1004,884,713,668,580
+2023-07,Wales,693,523,643,726,1013,888,720,675,586
+2023-08,Wales,694,523,644,727,1013,890,721,676,586
+2023-09,Wales,702,529,652,736,1025,900,730,684,593
+2023-10,Wales,710,536,660,744,1035,907,738,691,601
+2023-11,Wales,715,538,665,750,1045,917,742,696,606
+2023-12,Wales,717,540,666,751,1050,918,742,698,607
+2024-01,Wales,720,543,669,754,1056,922,746,701,610
+2024-02,Wales,723,546,671,758,1063,928,750,705,612
+2024-03,Wales,728,548,676,762,1070,934,754,709,615
+2024-04,Wales,731,551,679,765,1075,939,757,712,619
+2024-05,Wales,736,555,685,771,1081,944,762,718,624
+2024-06,Wales,743,560,690,777,1093,951,770,724,629
+2024-07,Wales,748,565,695,782,1101,954,774,730,634
+2024-08,Wales,752,568,699,787,1109,961,779,734,638
+2024-09,Wales,760,574,705,796,1126,972,787,742,644
+2024-10,Wales,766,579,710,801,1135,982,792,748,649
+2024-11,Wales,773,584,716,808,1150,991,800,754,655
+2024-12,Wales,777,586,720,813,1157,997,804,759,657
+2025-01,Wales,781,589,722,817,1163,1001,808,762,659
+2025-02,Wales,785,592,725,823,1171,1006,813,768,662
+2025-03,Wales,792,596,732,830,1182,1015,821,775,667
+2025-04,Wales,795,599,734,833,1186,1021,823,777,670
+2025-05,Wales,799,601,738,837,1190,1024,827,781,673
+2025-06,Wales,804,605,742,843,1199,1029,833,788,675
+2025-07,Wales,807,607,744,847,1203,1034,836,791,677
+2025-08,Wales,811,611,747,851,1209,1036,839,796,681
+2025-09,Wales,815,614,751,855,1214,1040,843,801,684
+2025-10,Wales,817,616,755,859,1209,1043,843,805,687
+2025-11,Wales,820,618,757,861,1218,1049,848,807,688
+2025-12,Wales,822,618,758,863,1219,1051,850,809,688
+2026-01,Wales,826,622,761,867,1227,1057,854,813,691
+2026-02,Wales,828,624,764,870,1230,1060,856,816,692
+2026-03,Wales,830,625,766,872,1229,1061,858,818,694
+2026-04,Wales,834,627,769,876,1235,1068,863,821,697
+2026-05,Wales,836,629,771,880,1237,1068,866,824,699
+2026-06,Wales,843,632,777,888,1246,1077,873,831,704
+2026-07,Wales,843,634,777,889,1244,1079,873,831,705
+2026-08,Wales,846,636,779,890,1247,1083,877,833,706
+2026-09,Wales,848,637,782,892,1252,1087,879,835,707
+2015-01,Scotland,673,471,615,749,1130,986,711,676,568
+2015-02,Scotland,675,472,617,750,1134,991,713,680,569
+2015-03,Scotland,676,473,619,751,1139,995,715,680,570
+2015-04,Scotland,678,475,620,755,1141,996,718,681,572
+2015-05,Scotland,680,476,622,756,1147,1002,720,684,573
+2015-06,Scotland,681,478,623,757,1149,1004,721,685,574
+2015-07,Scotland,682,478,623,758,1148,1005,723,685,574
+2015-08,Scotland,684,479,626,762,1156,1008,726,687,577
+2015-09,Scotland,685,480,626,762,1157,1009,727,688,577
+2015-10,Scotland,686,480,627,763,1159,1012,728,690,577
+2015-11,Scotland,686,481,627,763,1157,1013,727,691,577
+2015-12,Scotland,685,481,627,762,1156,1012,726,690,577
+2016-01,Scotland,687,482,627,763,1161,1013,729,691,578
+2016-02,Scotland,687,482,627,762,1161,1015,729,691,578
+2016-03,Scotland,687,482,627,764,1161,1016,730,692,578
+2016-04,Scotland,689,482,628,765,1162,1016,732,693,579
+2016-05,Scotland,689,483,629,766,1165,1017,734,695,580
+2016-06,Scotland,689,482,628,766,1163,1018,734,694,579
+2016-07,Scotland,690,482,629,771,1166,1020,736,695,580
+2016-08,Scotland,690,483,630,773,1166,1020,738,695,580
+2016-09,Scotland,692,483,630,776,1174,1025,740,697,581
+2016-10,Scotland,693,484,631,777,1174,1029,741,698,582
+2016-11,Scotland,694,484,631,778,1174,1032,742,700,582
+2016-12,Scotland,695,485,631,779,1172,1032,741,699,583
+2017-01,Scotland,696,486,633,781,1175,1032,745,700,584
+2017-02,Scotland,697,487,634,783,1181,1034,747,702,585
+2017-03,Scotland,698,486,635,785,1186,1036,746,704,585
+2017-04,Scotland,701,487,637,790,1202,1043,749,707,587
+2017-05,Scotland,702,487,638,792,1211,1048,752,709,588
+2017-06,Scotland,703,488,638,793,1214,1051,753,707,588
+2017-07,Scotland,706,490,641,797,1219,1056,756,711,590
+2017-08,Scotland,709,491,643,801,1231,1064,758,713,592
+2017-09,Scotland,710,492,644,801,1236,1067,758,714,593
+2017-10,Scotland,711,493,644,802,1242,1076,760,715,593
+2017-11,Scotland,712,493,644,802,1241,1075,760,716,593
+2017-12,Scotland,712,494,644,804,1244,1078,761,716,594
+2018-01,Scotland,714,495,645,806,1251,1083,761,715,595
+2018-02,Scotland,716,495,644,808,1264,1087,765,718,596
+2018-03,Scotland,718,496,646,814,1282,1094,769,719,597
+2018-04,Scotland,719,496,647,817,1294,1095,771,720,598
+2018-05,Scotland,721,496,648,822,1309,1100,774,720,599
+2018-06,Scotland,721,496,648,826,1318,1100,776,719,599
+2018-07,Scotland,722,497,650,829,1322,1099,778,722,600
+2018-08,Scotland,724,497,651,834,1330,1101,780,726,601
+2018-09,Scotland,724,497,651,835,1333,1105,780,725,601
+2018-10,Scotland,725,498,652,835,1334,1103,783,726,602
+2018-11,Scotland,727,498,653,838,1339,1106,788,729,603
+2018-12,Scotland,727,498,655,840,1340,1105,790,729,603
+2019-01,Scotland,728,499,656,840,1348,1108,790,729,603
+2019-02,Scotland,728,499,657,841,1349,1108,793,731,604
+2019-03,Scotland,730,500,658,842,1358,1109,795,735,604
+2019-04,Scotland,733,501,660,845,1368,1120,797,737,606
+2019-05,Scotland,734,501,660,848,1377,1125,799,740,606
+2019-06,Scotland,737,502,662,851,1387,1135,802,742,608
+2019-07,Scotland,739,503,663,849,1387,1141,804,744,608
+2019-08,Scotland,741,505,665,849,1396,1147,805,747,610
+2019-09,Scotland,742,506,667,848,1394,1151,806,748,611
+2019-10,Scotland,744,507,668,846,1396,1157,808,749,611
+2019-11,Scotland,746,509,669,848,1396,1160,811,751,613
+2019-12,Scotland,747,510,670,849,1400,1165,811,752,613
+2020-01,Scotland,749,512,671,850,1401,1167,811,753,615
+2020-02,Scotland,748,512,671,847,1403,1166,807,752,615
+2020-03,Scotland,750,513,674,853,1414,1165,810,754,617
+2020-04,Scotland,752,514,676,858,1431,1171,813,754,619
+2020-05,Scotland,754,515,677,861,1439,1172,814,754,621
+2020-06,Scotland,753,515,676,860,1442,1173,814,753,620
+2020-07,Scotland,754,515,677,860,1449,1175,814,753,620
+2020-08,Scotland,754,515,678,859,1447,1172,814,754,621
+2020-09,Scotland,754,515,678,861,1439,1171,813,757,621
+2020-10,Scotland,754,515,677,864,1431,1171,814,758,621
+2020-11,Scotland,756,517,678,866,1436,1178,816,757,622
+2020-12,Scotland,757,517,678,868,1443,1178,817,758,623
+2021-01,Scotland,758,516,679,870,1452,1182,819,758,624
+2021-02,Scotland,758,516,680,870,1455,1184,820,757,624
+2021-03,Scotland,760,515,681,872,1463,1189,824,758,624
+2021-04,Scotland,763,516,682,875,1474,1197,827,761,626
+2021-05,Scotland,765,517,683,875,1486,1204,831,766,627
+2021-06,Scotland,766,518,684,874,1485,1203,834,767,628
+2021-07,Scotland,767,518,684,874,1484,1208,837,768,628
+2021-08,Scotland,768,520,684,871,1472,1210,835,769,629
+2021-09,Scotland,768,521,685,872,1465,1206,835,769,630
+2021-10,Scotland,770,522,687,871,1468,1207,835,771,632
+2021-11,Scotland,774,526,690,875,1475,1214,840,775,635
+2021-12,Scotland,780,529,694,880,1496,1227,853,778,639
+2022-01,Scotland,784,530,698,884,1509,1236,859,782,641
+2022-02,Scotland,787,532,700,887,1513,1246,862,786,642
+2022-03,Scotland,791,535,704,894,1521,1254,866,790,646
+2022-04,Scotland,796,537,707,902,1546,1261,870,795,650
+2022-05,Scotland,799,540,710,908,1564,1265,873,799,652
+2022-06,Scotland,802,542,713,913,1569,1270,877,803,654
+2022-07,Scotland,804,545,715,915,1568,1274,877,805,657
+2022-08,Scotland,807,547,718,918,1566,1274,877,808,660
+2022-09,Scotland,813,553,725,923,1577,1280,883,815,666
+2022-10,Scotland,822,558,734,935,1599,1296,892,823,674
+2022-11,Scotland,829,563,740,942,1604,1304,899,831,680
+2022-12,Scotland,837,568,746,953,1619,1315,910,839,686
+2023-01,Scotland,844,573,752,962,1635,1327,919,845,691
+2023-02,Scotland,851,578,760,971,1649,1340,925,854,697
+2023-03,Scotland,858,583,765,981,1664,1345,933,862,703
+2023-04,Scotland,866,588,773,994,1686,1357,941,870,710
+2023-05,Scotland,876,593,782,1008,1722,1376,952,882,718
+2023-06,Scotland,885,599,791,1018,1743,1391,960,891,725
+2023-07,Scotland,893,605,799,1028,1759,1405,968,896,731
+2023-08,Scotland,901,609,807,1038,1778,1422,978,904,738
+2023-09,Scotland,908,612,813,1045,1785,1434,986,909,742
+2023-10,Scotland,915,617,819,1055,1796,1454,994,916,748
+2023-11,Scotland,921,620,824,1065,1792,1469,997,920,752
+2023-12,Scotland,928,625,829,1073,1807,1478,1004,929,757
+2024-01,Scotland,937,631,836,1083,1829,1501,1014,937,763
+2024-02,Scotland,944,635,841,1090,1841,1512,1023,942,769
+2024-03,Scotland,947,637,844,1096,1858,1516,1021,945,772
+2024-04,Scotland,951,640,848,1103,1862,1519,1024,948,777
+2024-05,Scotland,956,645,854,1110,1873,1521,1028,951,783
+2024-06,Scotland,958,647,856,1113,1883,1521,1028,954,785
+2024-07,Scotland,964,652,862,1121,1893,1536,1034,960,789
+2024-08,Scotland,968,654,864,1127,1896,1543,1040,965,792
+2024-09,Scotland,971,656,869,1129,1900,1546,1043,968,795
+2024-10,Scotland,975,661,871,1131,1900,1550,1047,969,799
+2024-11,Scotland,980,664,876,1139,1899,1558,1051,976,803
+2024-12,Scotland,991,671,885,1147,1906,1571,1063,986,813
+2025-01,Scotland,996,674,889,1152,1912,1579,1068,992,816
+2025-02,Scotland,998,676,891,1157,1921,1585,1071,994,818
+2025-03,Scotland,1001,678,894,1160,1926,1587,1075,997,820
+2025-04,Scotland,999,677,894,1158,1920,1579,1070,997,820
+2025-05,Scotland,999,680,894,1152,1914,1573,1069,997,821
+2025-06,Scotland,999,680,894,1154,1919,1571,1067,997,822
+2025-07,Scotland,999,680,894,1150,1915,1573,1064,998,821
+2025-08,Scotland,1002,683,895,1157,1921,1575,1067,1000,824
+2025-09,Scotland,1004,685,897,1158,1915,1575,1069,999,827
+2025-10,Scotland,1008,689,901,1160,1917,1578,1070,1000,832
+2025-11,Scotland,1012,692,905,1165,1917,1585,1074,1004,836
+2025-12,Scotland,1018,697,910,1171,1921,1588,1081,1009,842
+2026-01,Scotland,1021,700,912,1175,1929,1587,1084,1013,845
+2026-02,Scotland,1022,700,914,1177,1939,1583,1084,1014,846
+2026-03,Scotland,1022,701,914,1176,1950,1574,1084,1016,847
+2026-04,Scotland,1019,702,914,1173,1947,1559,1080,1012,847
+2026-05,Scotland,1009,698,909,1161,1934,1537,1064,996,841
+2026-06,Scotland,1012,698,910,1171,1943,1549,1076,1003,841
+2026-07,Scotland,1016,700,912,1176,1957,1565,1078,1005,843
+2026-08,Scotland,1013,702,911,1172,1941,1555,1077,1004,840
+2026-09,Scotland,1011,702,912,1168,1951,1551,1073,1003,840
+2015-01,Northern Ireland,532,388,477,531,716,641,549,497,479
+2015-02,Northern Ireland,532,388,477,531,716,642,549,497,479
+2015-03,Northern Ireland,532,389,478,531,718,640,548,497,481
+2015-04,Northern Ireland,532,388,479,531,720,640,549,497,482
+2015-05,Northern Ireland,533,389,480,532,720,640,549,498,484
+2015-06,Northern Ireland,534,392,481,532,720,641,550,499,485
+2015-07,Northern Ireland,534,391,481,533,720,640,550,500,485
+2015-08,Northern Ireland,534,390,482,534,720,641,551,500,485
+2015-09,Northern Ireland,536,391,483,535,720,642,552,501,487
+2015-10,Northern Ireland,537,392,486,537,719,639,553,503,489
+2015-11,Northern Ireland,537,394,487,538,719,638,552,505,492
+2015-12,Northern Ireland,537,396,488,539,719,637,552,506,493
+2016-01,Northern Ireland,538,396,489,540,720,637,553,507,493
+2016-02,Northern Ireland,539,397,488,540,724,641,554,507,492
+2016-03,Northern Ireland,540,395,488,541,727,644,555,508,492
+2016-04,Northern Ireland,541,398,489,542,728,647,556,509,493
+2016-05,Northern Ireland,542,398,489,544,730,649,557,510,492
+2016-06,Northern Ireland,542,396,488,544,728,652,558,510,491
+2016-07,Northern Ireland,542,394,488,545,728,652,559,510,489
+2016-08,Northern Ireland,543,394,488,546,729,654,560,510,488
+2016-09,Northern Ireland,541,393,486,545,726,657,560,508,487
+2016-10,Northern Ireland,542,394,485,545,725,659,561,507,486
+2016-11,Northern Ireland,541,395,484,545,725,663,561,506,485
+2016-12,Northern Ireland,542,395,483,545,725,668,562,504,484
+2017-01,Northern Ireland,542,393,483,545,729,674,564,504,482
+2017-02,Northern Ireland,542,394,483,545,727,673,563,503,482
+2017-03,Northern Ireland,543,393,483,546,732,675,564,504,482
+2017-04,Northern Ireland,545,394,484,548,734,676,567,507,483
+2017-05,Northern Ireland,546,397,485,549,735,677,568,508,485
+2017-06,Northern Ireland,547,397,486,551,736,679,570,508,486
+2017-07,Northern Ireland,548,399,487,553,736,681,571,510,487
+2017-08,Northern Ireland,550,401,488,554,740,683,572,512,489
+2017-09,Northern Ireland,552,403,490,556,743,687,574,514,490
+2017-10,Northern Ireland,553,404,490,557,742,688,574,515,490
+2017-11,Northern Ireland,554,407,492,558,742,688,575,516,493
+2017-12,Northern Ireland,555,409,493,559,744,690,575,517,495
+2018-01,Northern Ireland,556,409,494,560,744,691,576,518,495
+2018-02,Northern Ireland,557,411,495,561,746,692,577,519,496
+2018-03,Northern Ireland,559,411,496,562,753,694,580,521,497
+2018-04,Northern Ireland,562,413,497,565,758,701,581,523,499
+2018-05,Northern Ireland,563,415,498,567,758,701,583,525,500
+2018-06,Northern Ireland,564,417,500,567,758,702,584,525,502
+2018-07,Northern Ireland,565,419,501,569,762,705,585,527,503
+2018-08,Northern Ireland,567,422,501,570,766,707,587,528,504
+2018-09,Northern Ireland,569,424,502,571,770,709,588,530,505
+2018-10,Northern Ireland,569,424,503,572,770,709,589,530,506
+2018-11,Northern Ireland,569,424,504,572,768,706,589,530,507
+2018-12,Northern Ireland,570,424,506,573,768,707,591,532,509
+2019-01,Northern Ireland,572,426,507,575,772,708,591,533,511
+2019-02,Northern Ireland,572,424,507,575,776,709,592,534,511
+2019-03,Northern Ireland,573,425,508,576,775,708,593,535,513
+2019-04,Northern Ireland,574,425,508,577,776,709,593,535,513
+2019-05,Northern Ireland,574,427,510,577,775,712,593,536,514
+2019-06,Northern Ireland,575,427,510,578,776,712,594,536,514
+2019-07,Northern Ireland,576,430,512,580,776,715,595,538,516
+2019-08,Northern Ireland,579,430,513,582,781,720,597,540,517
+2019-09,Northern Ireland,580,430,514,583,779,719,598,541,518
+2019-10,Northern Ireland,581,431,515,584,781,722,599,543,517
+2019-11,Northern Ireland,582,433,517,584,780,723,600,543,519
+2019-12,Northern Ireland,582,433,517,585,781,723,600,544,519
+2020-01,Northern Ireland,584,435,519,586,784,726,602,545,520
+2020-02,Northern Ireland,585,434,519,587,786,729,602,547,520
+2020-03,Northern Ireland,585,435,520,588,782,731,603,546,520
+2020-04,Northern Ireland,586,437,522,588,784,732,604,547,522
+2020-05,Northern Ireland,588,435,522,589,788,738,605,548,521
+2020-06,Northern Ireland,588,435,523,590,790,739,605,550,521
+2020-07,Northern Ireland,590,438,524,592,792,741,606,551,523
+2020-08,Northern Ireland,592,440,526,594,797,744,610,553,525
+2020-09,Northern Ireland,594,438,528,595,802,748,612,555,526
+2020-10,Northern Ireland,597,442,530,597,805,752,614,557,528
+2020-11,Northern Ireland,599,441,533,599,809,757,616,558,530
+2020-12,Northern Ireland,601,441,536,602,810,760,618,560,534
+2021-01,Northern Ireland,605,444,539,605,820,764,622,563,538
+2021-02,Northern Ireland,607,443,541,607,825,768,623,565,540
+2021-03,Northern Ireland,610,446,543,610,832,774,627,567,542
+2021-04,Northern Ireland,613,447,547,613,837,780,630,570,545
+2021-05,Northern Ireland,617,450,549,618,844,787,634,574,548
+2021-06,Northern Ireland,619,451,549,620,847,789,636,577,547
+2021-07,Northern Ireland,623,453,551,623,853,796,640,579,549
+2021-08,Northern Ireland,628,454,556,629,859,800,645,584,553
+2021-09,Northern Ireland,633,459,559,634,866,808,651,588,558
+2021-10,Northern Ireland,637,462,563,638,871,817,655,591,561
+2021-11,Northern Ireland,642,465,568,643,877,822,661,595,566
+2021-12,Northern Ireland,646,467,572,647,883,828,665,600,570
+2022-01,Northern Ireland,651,470,576,652,889,832,670,604,574
+2022-02,Northern Ireland,655,473,579,656,902,838,675,608,578
+2022-03,Northern Ireland,660,477,581,660,914,848,679,613,579
+2022-04,Northern Ireland,665,482,584,664,925,856,686,617,582
+2022-05,Northern Ireland,670,484,586,669,932,862,692,621,584
+2022-06,Northern Ireland,675,491,591,674,934,867,696,626,589
+2022-07,Northern Ireland,680,494,596,678,950,879,701,630,594
+2022-08,Northern Ireland,686,499,600,684,961,886,707,636,598
+2022-09,Northern Ireland,692,504,605,689,973,895,712,643,603
+2022-10,Northern Ireland,696,506,609,693,979,900,716,647,607
+2022-11,Northern Ireland,701,509,613,698,985,910,721,650,611
+2022-12,Northern Ireland,704,511,616,702,986,914,724,654,613
+2023-01,Northern Ireland,708,513,619,707,994,920,727,658,617
+2023-02,Northern Ireland,713,517,621,711,1005,924,732,662,620
+2023-03,Northern Ireland,717,517,626,716,1011,928,737,666,625
+2023-04,Northern Ireland,721,518,628,721,1017,933,741,670,627
+2023-05,Northern Ireland,726,520,634,727,1023,940,746,675,633
+2023-06,Northern Ireland,732,522,638,733,1029,944,753,680,637
+2023-07,Northern Ireland,740,525,645,741,1042,956,760,689,642
+2023-08,Northern Ireland,745,527,650,747,1047,956,766,695,646
+2023-09,Northern Ireland,751,531,656,754,1046,964,773,701,651
+2023-10,Northern Ireland,759,536,665,762,1051,972,780,709,659
+2023-11,Northern Ireland,764,542,671,768,1047,974,786,713,666
+2023-12,Northern Ireland,769,548,675,773,1054,981,792,719,669
+2024-01,Northern Ireland,775,551,680,778,1062,990,797,724,673
+2024-02,Northern Ireland,782,555,687,785,1073,995,805,732,680
+2024-03,Northern Ireland,787,561,691,791,1082,1001,810,738,684
+2024-04,Northern Ireland,792,565,694,796,1089,1007,815,742,688
+2024-05,Northern Ireland,796,568,698,799,1096,1006,820,747,690
+2024-06,Northern Ireland,802,572,702,803,1109,1017,826,753,693
+2024-07,Northern Ireland,808,578,707,808,1120,1022,832,758,699
+2024-08,Northern Ireland,812,579,710,812,1131,1034,835,762,701
+2024-09,Northern Ireland,818,582,716,818,1139,1041,842,767,707
+2024-10,Northern Ireland,826,587,721,826,1151,1053,852,774,711
+2024-11,Northern Ireland,829,590,724,829,1150,1048,856,777,714
+2024-12,Northern Ireland,832,591,727,833,1153,1051,859,780,718
+2025-01,Northern Ireland,838,594,734,839,1165,1057,864,788,725
+2025-02,Northern Ireland,843,598,736,844,1190,1061,867,795,729
+2025-03,Northern Ireland,848,598,738,849,1198,1066,874,799,731
+2025-04,Northern Ireland,852,597,741,854,1208,1072,880,802,733
+2025-05,Northern Ireland,855,599,745,857,1211,1073,883,806,737
+2025-06,Northern Ireland,860,604,748,863,1214,1078,889,810,740
+2025-07,Northern Ireland,865,609,753,867,1224,1087,892,814,746
+2025-08,Northern Ireland,866,608,755,868,1225,1087,893,815,749
+2025-09,Northern Ireland,871,610,757,874,1230,1094,900,818,751
+2025-10,Northern Ireland,873,614,760,876,1228,1095,902,821,754
+2025-11,Northern Ireland,875,616,762,879,1228,1096,903,824,755
+2025-12,Northern Ireland,875,619,762,878,1229,1092,901,826,756
+2026-01,Northern Ireland,880,620,766,883,1246,1102,904,831,760
+2026-02,Northern Ireland,877,622,763,880,1239,1090,901,829,760
+2026-03,Northern Ireland,876,619,761,879,1237,1091,902,826,757
+2026-04,Northern Ireland,877,618,762,882,1235,1088,904,829,757
+2026-05,Northern Ireland,875,619,762,877,1231,1087,899,826,758
+2026-06,Northern Ireland,874,621,764,875,1223,1086,894,822,762
+2026-07,Northern Ireland,879,623,769,880,1229,1094,901,826,766
+2026-08,Northern Ireland,,,,,,,,,
+2026-09,Northern Ireland,,,,,,,,,
+2015-01,North East,533,370,474,562,849,762,561,546,453
+2015-02,North East,533,371,474,562,848,761,561,547,453
+2015-03,North East,533,370,474,562,850,763,561,547,453
+2015-04,North East,534,371,475,563,849,763,561,547,454
+2015-05,North East,534,371,475,563,849,763,562,547,454
+2015-06,North East,534,371,475,564,849,765,563,548,455
+2015-07,North East,534,371,475,564,850,765,563,547,454
+2015-08,North East,535,372,476,565,853,767,563,548,455
+2015-09,North East,535,371,476,565,854,768,563,548,455
+2015-10,North East,536,371,476,565,854,768,564,548,455
+2015-11,North East,537,372,477,566,857,769,565,549,456
+2015-12,North East,537,372,477,566,856,769,565,549,456
+2016-01,North East,537,373,478,567,856,770,566,550,457
+2016-02,North East,538,374,479,568,857,772,567,551,458
+2016-03,North East,539,374,479,569,858,773,568,551,458
+2016-04,North East,539,374,479,570,859,774,568,552,459
+2016-05,North East,540,375,480,570,859,775,569,552,459
+2016-06,North East,541,375,480,571,863,777,570,553,460
+2016-07,North East,544,377,483,575,868,781,574,557,462
+2016-08,North East,545,378,484,576,871,784,575,558,463
+2016-09,North East,547,379,485,578,875,786,577,560,465
+2016-10,North East,548,380,486,579,877,788,578,561,466
+2016-11,North East,550,381,488,582,879,790,580,563,468
+2016-12,North East,551,381,488,582,880,791,580,563,468
+2017-01,North East,551,382,489,582,880,791,581,563,468
+2017-02,North East,553,383,491,585,884,794,583,566,470
+2017-03,North East,553,383,490,585,884,794,584,566,470
+2017-04,North East,553,383,490,584,883,793,583,566,469
+2017-05,North East,554,384,491,585,885,795,584,566,470
+2017-06,North East,554,385,491,585,884,794,584,566,470
+2017-07,North East,554,384,491,586,885,795,584,567,470
+2017-08,North East,554,385,491,586,884,795,585,567,471
+2017-09,North East,554,385,491,585,885,795,584,567,470
+2017-10,North East,554,385,491,585,882,794,585,566,471
+2017-11,North East,554,385,491,586,881,794,585,566,471
+2017-12,North East,554,386,491,586,883,795,585,567,471
+2018-01,North East,553,385,491,585,880,794,584,566,471
+2018-02,North East,554,386,491,586,882,795,585,566,470
+2018-03,North East,554,386,491,586,881,794,585,566,471
+2018-04,North East,553,386,490,585,880,793,585,566,470
+2018-05,North East,553,385,490,584,879,792,584,565,470
+2018-06,North East,555,386,491,586,882,795,587,567,471
+2018-07,North East,554,386,491,586,881,794,586,567,471
+2018-08,North East,555,386,492,586,883,795,587,567,471
+2018-09,North East,556,387,492,587,883,795,588,568,472
+2018-10,North East,557,388,493,589,888,798,589,570,473
+2018-11,North East,557,388,493,589,888,797,588,570,473
+2018-12,North East,557,387,493,588,889,796,588,570,472
+2019-01,North East,557,387,492,589,888,796,588,570,472
+2019-02,North East,556,387,492,588,887,794,588,570,471
+2019-03,North East,557,388,493,589,887,794,589,571,472
+2019-04,North East,557,388,493,589,886,794,589,571,472
+2019-05,North East,558,389,493,590,888,795,590,572,473
+2019-06,North East,559,390,494,590,887,795,590,572,474
+2019-07,North East,560,391,495,591,886,796,591,573,475
+2019-08,North East,559,390,494,589,885,794,590,572,473
+2019-09,North East,559,391,494,590,889,795,591,574,474
+2019-10,North East,561,392,495,591,891,797,592,575,475
+2019-11,North East,562,393,497,592,893,799,593,577,476
+2019-12,North East,562,393,496,592,891,798,593,577,476
+2020-01,North East,563,394,497,593,890,800,594,578,477
+2020-02,North East,563,394,497,593,890,799,594,578,476
+2020-03,North East,563,394,497,593,889,799,594,577,476
+2020-04,North East,563,395,498,594,890,800,595,578,477
+2020-05,North East,563,395,498,594,889,800,595,578,477
+2020-06,North East,565,397,499,595,892,802,596,580,479
+2020-07,North East,565,397,500,596,892,802,597,580,479
+2020-08,North East,566,397,500,596,894,803,597,581,480
+2020-09,North East,568,399,502,598,899,805,599,583,481
+2020-10,North East,571,400,504,601,903,809,601,587,483
+2020-11,North East,573,402,505,603,905,812,603,589,485
+2020-12,North East,574,402,506,605,906,813,605,590,486
+2021-01,North East,575,403,507,606,905,815,606,590,487
+2021-02,North East,576,403,508,607,909,815,606,592,487
+2021-03,North East,576,404,509,608,912,817,607,593,487
+2021-04,North East,577,404,509,609,914,818,608,594,488
+2021-05,North East,578,405,510,610,916,819,609,595,489
+2021-06,North East,580,405,511,612,919,822,611,597,489
+2021-07,North East,581,406,512,613,922,824,612,599,490
+2021-08,North East,582,406,513,614,925,825,613,600,491
+2021-09,North East,585,408,515,617,933,829,615,603,493
+2021-10,North East,586,408,515,618,937,831,616,605,494
+2021-11,North East,587,408,516,620,938,832,617,606,494
+2021-12,North East,589,409,518,622,943,836,619,608,495
+2022-01,North East,586,407,516,620,936,834,617,605,493
+2022-02,North East,588,408,517,622,940,836,619,607,494
+2022-03,North East,593,411,522,627,950,844,623,613,499
+2022-04,North East,595,413,524,629,951,847,625,615,500
+2022-05,North East,598,415,525,631,956,851,627,618,502
+2022-06,North East,600,416,528,634,961,855,630,620,504
+2022-07,North East,603,418,530,636,965,859,632,623,507
+2022-08,North East,604,419,531,638,968,861,634,625,508
+2022-09,North East,607,421,533,641,974,864,637,629,510
+2022-10,North East,611,423,536,645,980,869,640,632,513
+2022-11,North East,612,424,537,647,982,872,642,634,514
+2022-12,North East,616,427,541,651,988,878,647,638,517
+2023-01,North East,619,429,543,654,993,883,650,641,519
+2023-02,North East,622,431,546,657,996,886,653,644,522
+2023-03,North East,624,432,547,659,1001,889,656,646,524
+2023-04,North East,629,435,551,663,1007,896,660,650,527
+2023-05,North East,629,435,552,664,1005,896,661,649,528
+2023-06,North East,631,437,554,667,1010,899,664,652,530
+2023-07,North East,637,441,559,672,1019,907,670,657,535
+2023-08,North East,639,443,561,675,1023,911,673,660,537
+2023-09,North East,641,445,563,677,1027,914,675,663,539
+2023-10,North East,645,447,566,681,1032,919,679,666,542
+2023-11,North East,647,449,568,682,1032,921,680,667,543
+2023-12,North East,649,451,570,685,1033,925,683,670,546
+2024-01,North East,653,454,574,690,1040,931,688,674,549
+2024-02,North East,658,457,578,695,1046,936,692,679,553
+2024-03,North East,663,461,582,700,1052,943,698,684,557
+2024-04,North East,666,464,585,703,1055,947,701,686,560
+2024-05,North East,668,465,587,705,1058,950,703,689,561
+2024-06,North East,669,467,589,707,1057,952,706,689,563
+2024-07,North East,676,472,595,714,1065,960,713,697,569
+2024-08,North East,682,477,600,720,1073,967,719,703,574
+2024-09,North East,687,481,605,726,1079,975,725,709,578
+2024-10,North East,694,485,611,733,1090,984,732,716,583
+2024-11,North East,700,490,616,740,1100,993,739,722,589
+2024-12,North East,706,495,622,747,1109,1001,745,729,594
+2025-01,North East,710,498,626,751,1115,1007,749,732,598
+2025-02,North East,715,501,630,756,1121,1012,754,737,602
+2025-03,North East,725,508,639,766,1136,1024,764,748,611
+2025-04,North East,728,511,642,770,1140,1027,767,752,614
+2025-05,North East,733,514,647,774,1144,1032,772,756,618
+2025-06,North East,734,516,649,776,1145,1033,773,758,620
+2025-07,North East,736,519,651,778,1146,1035,775,760,622
+2025-08,North East,745,524,658,786,1159,1044,783,770,629
+2025-09,North East,750,528,662,792,1167,1050,788,775,633
+2025-10,North East,756,532,667,798,1175,1058,795,782,637
+2025-11,North East,759,534,670,802,1182,1064,798,785,639
+2025-12,North East,762,536,673,806,1185,1067,802,789,642
+2026-01,North East,767,540,678,811,1193,1073,807,795,646
+2026-02,North East,770,542,680,813,1195,1076,810,796,648
+2026-03,North East,772,543,683,816,1196,1078,813,799,650
+2026-04,North East,776,546,686,821,1201,1083,817,803,653
+2026-05,North East,776,546,686,821,1199,1083,818,803,653
+2026-06,North East,781,550,690,827,1206,1089,823,808,657
+2026-07,North East,783,552,692,829,1209,1092,825,810,659
+2026-08,North East,788,554,697,835,1217,1099,831,816,662
+2026-09,North East,790,555,698,837,1219,1101,834,818,663
+2015-01,North West,594,425,546,644,940,843,649,593,506
+2015-02,North West,595,426,547,645,941,844,650,595,507
+2015-03,North West,596,427,548,646,944,847,651,596,508
+2015-04,North West,597,427,549,647,944,847,652,596,508
+2015-05,North West,597,428,549,647,944,848,653,597,509
+2015-06,North West,597,427,549,647,943,848,653,596,509
+2015-07,North West,598,428,550,648,945,851,654,597,510
+2015-08,North West,599,429,551,649,949,853,655,597,510
+2015-09,North West,600,429,552,651,953,855,656,599,511
+2015-10,North West,601,430,552,652,954,856,658,600,512
+2015-11,North West,603,431,554,654,958,860,660,602,514
+2015-12,North West,603,431,554,654,957,859,660,602,514
+2016-01,North West,603,432,555,655,957,860,660,601,515
+2016-02,North West,605,433,556,656,958,862,662,603,516
+2016-03,North West,606,434,556,658,959,864,663,604,516
+2016-04,North West,607,434,558,659,962,866,665,605,518
+2016-05,North West,608,435,559,660,963,868,666,606,519
+2016-06,North West,610,436,560,662,967,870,668,607,520
+2016-07,North West,611,436,561,663,970,872,669,608,520
+2016-08,North West,612,438,562,665,974,875,670,610,522
+2016-09,North West,613,438,563,666,976,875,671,611,522
+2016-10,North West,614,439,563,667,978,877,673,612,523
+2016-11,North West,615,440,564,668,977,878,674,612,524
+2016-12,North West,616,440,565,670,981,880,675,614,525
+2017-01,North West,617,441,566,671,982,881,676,615,525
+2017-02,North West,619,442,567,672,984,882,678,616,526
+2017-03,North West,621,444,569,675,987,885,680,618,528
+2017-04,North West,622,445,570,676,989,887,682,619,530
+2017-05,North West,623,447,571,678,992,889,683,621,531
+2017-06,North West,624,448,572,678,992,890,684,621,532
+2017-07,North West,625,448,573,680,994,892,686,623,533
+2017-08,North West,627,450,574,681,996,894,687,624,534
+2017-09,North West,628,451,576,683,999,896,689,625,535
+2017-10,North West,630,452,577,684,999,897,691,627,537
+2017-11,North West,633,455,580,688,1004,901,695,630,540
+2017-12,North West,635,456,581,689,1007,904,696,632,541
+2018-01,North West,635,457,582,690,1007,905,697,632,542
+2018-02,North West,636,457,582,691,1009,906,698,632,542
+2018-03,North West,636,458,583,691,1009,906,698,633,543
+2018-04,North West,638,459,584,693,1010,907,700,634,544
+2018-05,North West,638,459,585,693,1012,909,701,635,544
+2018-06,North West,639,459,585,694,1012,909,701,635,545
+2018-07,North West,640,460,586,695,1013,910,702,636,546
+2018-08,North West,641,461,587,696,1017,912,704,638,547
+2018-09,North West,642,462,588,698,1019,913,705,639,547
+2018-10,North West,643,462,588,699,1022,914,706,640,548
+2018-11,North West,644,463,589,700,1025,916,707,641,549
+2018-12,North West,644,462,589,700,1025,915,707,641,548
+2019-01,North West,644,462,589,700,1024,914,707,641,548
+2019-02,North West,643,462,588,699,1023,912,707,641,547
+2019-03,North West,644,464,589,700,1023,912,707,642,548
+2019-04,North West,646,465,591,702,1024,914,709,644,550
+2019-05,North West,647,466,591,702,1026,914,710,644,550
+2019-06,North West,647,467,592,702,1025,915,710,645,551
+2019-07,North West,648,468,592,703,1024,916,711,646,551
+2019-08,North West,650,469,594,705,1028,918,713,648,553
+2019-09,North West,651,470,595,706,1032,919,714,649,553
+2019-10,North West,652,471,595,707,1033,921,715,650,554
+2019-11,North West,652,472,596,707,1034,922,715,651,555
+2019-12,North West,653,473,596,708,1033,922,716,651,555
+2020-01,North West,655,474,599,710,1034,925,718,654,557
+2020-02,North West,655,474,598,710,1033,924,718,654,557
+2020-03,North West,656,475,599,711,1033,924,719,654,558
+2020-04,North West,658,477,601,713,1036,928,722,656,560
+2020-05,North West,660,478,603,716,1039,930,724,658,561
+2020-06,North West,660,479,603,716,1039,931,724,659,562
+2020-07,North West,661,480,604,717,1041,933,725,660,563
+2020-08,North West,664,482,606,720,1046,936,727,663,565
+2020-09,North West,665,482,607,721,1049,937,728,664,566
+2020-10,North West,666,483,608,722,1051,938,729,665,566
+2020-11,North West,667,484,609,724,1051,941,731,667,567
+2020-12,North West,669,485,611,726,1053,943,733,669,569
+2021-01,North West,672,487,613,729,1055,947,736,671,571
+2021-02,North West,672,487,614,730,1058,947,736,672,571
+2021-03,North West,673,487,614,730,1062,948,737,673,571
+2021-04,North West,675,488,616,733,1067,952,740,675,573
+2021-05,North West,677,489,617,735,1070,955,742,677,574
+2021-06,North West,679,490,619,737,1073,958,744,679,575
+2021-07,North West,681,492,620,740,1078,962,746,682,577
+2021-08,North West,684,494,623,743,1084,965,749,685,579
+2021-09,North West,687,495,625,746,1093,970,751,688,581
+2021-10,North West,690,496,628,750,1100,974,755,691,583
+2021-11,North West,692,497,630,753,1104,978,757,694,584
+2021-12,North West,697,500,634,759,1115,986,763,699,588
+2022-01,North West,700,502,637,762,1119,991,766,703,590
+2022-02,North West,703,503,639,765,1124,995,769,706,592
+2022-03,North West,706,505,642,769,1130,1000,773,709,595
+2022-04,North West,709,508,645,772,1132,1005,775,712,597
+2022-05,North West,714,511,648,776,1141,1011,780,716,601
+2022-06,North West,717,514,651,780,1146,1016,784,720,604
+2022-07,North West,722,517,656,785,1155,1025,789,725,608
+2022-08,North West,727,520,660,790,1163,1030,794,730,612
+2022-09,North West,731,524,664,796,1172,1036,799,735,616
+2022-10,North West,735,526,667,799,1178,1041,803,739,618
+2022-11,North West,740,530,672,806,1186,1049,809,744,623
+2022-12,North West,744,532,675,809,1191,1055,813,747,626
+2023-01,North West,747,534,678,813,1197,1061,817,751,628
+2023-02,North West,751,538,682,818,1202,1067,822,755,632
+2023-03,North West,756,541,685,822,1210,1073,827,759,636
+2023-04,North West,762,546,692,829,1220,1083,835,765,641
+2023-05,North West,766,549,695,834,1225,1088,839,769,645
+2023-06,North West,772,553,700,840,1235,1096,846,774,650
+2023-07,North West,777,556,705,845,1244,1104,852,779,654
+2023-08,North West,783,561,710,852,1253,1111,858,785,659
+2023-09,North West,788,565,714,857,1261,1119,863,790,663
+2023-10,North West,793,569,719,862,1269,1126,869,795,668
+2023-11,North West,797,572,724,867,1273,1131,873,800,672
+2023-12,North West,805,578,731,875,1283,1142,882,807,679
+2024-01,North West,809,582,734,880,1289,1147,886,811,683
+2024-02,North West,817,587,741,888,1299,1157,895,819,688
+2024-03,North West,822,591,746,894,1306,1164,901,824,693
+2024-04,North West,829,597,753,902,1315,1173,909,831,699
+2024-05,North West,835,601,758,908,1324,1181,915,838,704
+2024-06,North West,844,609,767,918,1334,1193,926,847,712
+2024-07,North West,851,614,772,925,1341,1201,933,853,717
+2024-08,North West,855,617,776,929,1347,1207,937,858,721
+2024-09,North West,862,622,782,936,1353,1215,944,865,726
+2024-10,North West,870,628,790,945,1367,1226,954,873,733
+2024-11,North West,878,634,797,954,1380,1237,962,881,740
+2024-12,North West,883,638,802,960,1387,1243,967,886,745
+2025-01,North West,888,642,807,966,1395,1251,973,892,749
+2025-02,North West,893,646,812,970,1400,1255,978,897,754
+2025-03,North West,896,649,815,974,1404,1259,981,900,756
+2025-04,North West,899,651,818,977,1406,1261,984,903,759
+2025-05,North West,905,656,824,984,1413,1269,991,909,764
+2025-06,North West,911,661,830,990,1420,1276,996,915,771
+2025-07,North West,912,663,831,991,1419,1276,997,916,772
+2025-08,North West,916,665,834,995,1426,1280,1001,921,775
+2025-09,North West,923,670,840,1002,1436,1289,1008,928,780
+2025-10,North West,927,673,843,1007,1441,1294,1013,932,783
+2025-11,North West,933,677,849,1015,1454,1304,1020,939,788
+2025-12,North West,937,680,852,1019,1458,1308,1025,943,790
+2026-01,North West,941,683,857,1024,1464,1313,1030,948,794
+2026-02,North West,944,685,860,1027,1466,1316,1033,950,796
+2026-03,North West,947,687,863,1031,1468,1320,1036,954,799
+2026-04,North West,951,690,866,1035,1473,1324,1040,958,802
+2026-05,North West,954,692,869,1039,1477,1328,1044,961,804
+2026-06,North West,961,697,875,1046,1486,1337,1052,968,810
+2026-07,North West,965,700,878,1051,1491,1341,1056,972,813
+2026-08,North West,969,702,882,1056,1499,1349,1062,977,815
+2026-09,North West,975,705,887,1063,1507,1356,1069,983,819
+2015-01,Yorkshire and The Humber,586,409,522,613,925,798,623,578,478
+2015-02,Yorkshire and The Humber,585,409,522,612,921,797,622,577,478
+2015-03,Yorkshire and The Humber,586,409,522,613,924,798,623,578,478
+2015-04,Yorkshire and The Humber,586,409,522,613,922,799,623,577,478
+2015-05,Yorkshire and The Humber,585,409,522,612,920,798,622,577,478
+2015-06,Yorkshire and The Humber,583,408,521,611,914,797,621,575,477
+2015-07,Yorkshire and The Humber,584,409,522,612,916,799,622,575,478
+2015-08,Yorkshire and The Humber,585,409,522,612,918,800,623,575,478
+2015-09,Yorkshire and The Humber,587,409,523,614,922,803,625,577,480
+2015-10,Yorkshire and The Humber,586,409,523,614,920,802,624,577,479
+2015-11,Yorkshire and The Humber,587,410,524,615,923,804,625,577,480
+2015-12,Yorkshire and The Humber,587,410,524,615,921,803,626,577,480
+2016-01,Yorkshire and The Humber,586,410,524,615,918,803,625,576,480
+2016-02,Yorkshire and The Humber,585,410,523,614,915,801,624,575,480
+2016-03,Yorkshire and The Humber,587,411,524,616,918,804,626,577,481
+2016-04,Yorkshire and The Humber,588,412,526,618,921,807,628,578,482
+2016-05,Yorkshire and The Humber,590,413,527,619,922,809,629,579,483
+2016-06,Yorkshire and The Humber,591,413,527,620,925,810,630,580,484
+2016-07,Yorkshire and The Humber,591,413,528,621,927,811,631,581,484
+2016-08,Yorkshire and The Humber,593,414,529,622,931,814,632,582,485
+2016-09,Yorkshire and The Humber,594,415,530,624,934,815,634,584,486
+2016-10,Yorkshire and The Humber,595,416,531,625,935,817,635,585,487
+2016-11,Yorkshire and The Humber,596,417,531,626,935,818,636,585,488
+2016-12,Yorkshire and The Humber,598,418,533,628,940,821,638,588,489
+2017-01,Yorkshire and The Humber,599,418,534,630,941,822,639,589,490
+2017-02,Yorkshire and The Humber,600,419,535,631,942,822,640,590,490
+2017-03,Yorkshire and The Humber,602,420,536,632,944,825,642,591,492
+2017-04,Yorkshire and The Humber,605,423,539,636,950,830,645,594,495
+2017-05,Yorkshire and The Humber,605,424,539,636,951,830,646,594,495
+2017-06,Yorkshire and The Humber,605,424,539,636,949,830,646,594,495
+2017-07,Yorkshire and The Humber,606,424,540,636,951,831,647,595,495
+2017-08,Yorkshire and The Humber,608,426,541,639,953,833,649,597,497
+2017-09,Yorkshire and The Humber,608,426,542,639,955,835,649,597,498
+2017-10,Yorkshire and The Humber,609,427,543,640,954,835,651,598,499
+2017-11,Yorkshire and The Humber,610,428,543,641,955,836,652,599,500
+2017-12,Yorkshire and The Humber,611,429,544,642,958,838,653,600,501
+2018-01,Yorkshire and The Humber,612,429,545,643,957,839,653,600,501
+2018-02,Yorkshire and The Humber,611,429,544,642,957,838,653,600,501
+2018-03,Yorkshire and The Humber,612,430,545,643,958,838,654,601,501
+2018-04,Yorkshire and The Humber,614,431,546,645,961,841,656,602,503
+2018-05,Yorkshire and The Humber,614,431,547,645,962,842,657,603,503
+2018-06,Yorkshire and The Humber,614,431,547,645,961,841,656,603,503
+2018-07,Yorkshire and The Humber,615,432,547,646,961,842,657,603,504
+2018-08,Yorkshire and The Humber,615,431,548,646,964,842,658,604,504
+2018-09,Yorkshire and The Humber,617,433,549,649,967,845,660,606,505
+2018-10,Yorkshire and The Humber,617,433,549,649,970,846,660,606,505
+2018-11,Yorkshire and The Humber,619,434,550,650,973,847,662,608,506
+2018-12,Yorkshire and The Humber,619,433,550,650,975,847,662,608,506
+2019-01,Yorkshire and The Humber,621,434,551,652,977,848,664,611,507
+2019-02,Yorkshire and The Humber,622,435,552,653,978,849,665,612,507
+2019-03,Yorkshire and The Humber,622,436,552,653,978,848,664,612,508
+2019-04,Yorkshire and The Humber,624,437,554,655,979,849,666,614,509
+2019-05,Yorkshire and The Humber,624,438,554,655,980,849,667,614,510
+2019-06,Yorkshire and The Humber,625,439,555,656,979,851,668,615,511
+2019-07,Yorkshire and The Humber,626,440,556,657,978,852,669,616,511
+2019-08,Yorkshire and The Humber,628,441,557,658,982,853,670,618,512
+2019-09,Yorkshire and The Humber,631,444,560,661,989,858,674,621,515
+2019-10,Yorkshire and The Humber,632,445,561,663,992,860,675,623,516
+2019-11,Yorkshire and The Humber,635,447,563,665,995,863,677,625,518
+2019-12,Yorkshire and The Humber,637,449,564,667,997,865,679,627,520
+2020-01,Yorkshire and The Humber,637,449,565,667,994,865,680,628,520
+2020-02,Yorkshire and The Humber,638,450,566,668,995,867,681,629,521
+2020-03,Yorkshire and The Humber,638,451,566,669,995,867,681,629,521
+2020-04,Yorkshire and The Humber,639,451,567,670,996,868,682,630,522
+2020-05,Yorkshire and The Humber,640,452,568,671,997,870,684,631,523
+2020-06,Yorkshire and The Humber,641,453,569,672,998,871,684,631,524
+2020-07,Yorkshire and The Humber,643,454,571,674,1001,873,686,633,525
+2020-08,Yorkshire and The Humber,643,454,571,674,1003,874,686,634,526
+2020-09,Yorkshire and The Humber,645,455,572,675,1007,876,687,636,527
+2020-10,Yorkshire and The Humber,646,456,573,677,1008,878,689,637,528
+2020-11,Yorkshire and The Humber,645,455,572,676,1005,877,688,636,527
+2020-12,Yorkshire and The Humber,646,456,573,677,1005,878,689,637,527
+2021-01,Yorkshire and The Humber,646,456,574,678,1003,878,690,637,528
+2021-02,Yorkshire and The Humber,648,457,575,680,1008,879,691,639,529
+2021-03,Yorkshire and The Humber,650,458,576,682,1013,882,693,641,530
+2021-04,Yorkshire and The Humber,651,459,578,684,1016,885,694,643,531
+2021-05,Yorkshire and The Humber,654,461,580,687,1022,889,698,646,533
+2021-06,Yorkshire and The Humber,655,461,581,689,1024,891,699,647,534
+2021-07,Yorkshire and The Humber,658,463,583,692,1030,896,702,650,536
+2021-08,Yorkshire and The Humber,661,464,585,694,1035,898,704,653,538
+2021-09,Yorkshire and The Humber,663,465,587,696,1042,902,706,655,539
+2021-10,Yorkshire and The Humber,666,467,589,700,1050,906,709,659,541
+2021-11,Yorkshire and The Humber,668,468,591,702,1054,909,711,661,542
+2021-12,Yorkshire and The Humber,672,470,594,707,1062,916,715,665,545
+2022-01,Yorkshire and The Humber,677,473,599,712,1069,923,721,670,548
+2022-02,Yorkshire and The Humber,680,474,601,715,1075,927,724,673,550
+2022-03,Yorkshire and The Humber,683,476,603,718,1080,932,727,676,553
+2022-04,Yorkshire and The Humber,686,478,606,721,1083,937,729,679,555
+2022-05,Yorkshire and The Humber,689,481,608,724,1089,941,733,682,558
+2022-06,Yorkshire and The Humber,691,482,610,726,1092,944,734,684,559
+2022-07,Yorkshire and The Humber,694,485,613,729,1097,949,738,687,562
+2022-08,Yorkshire and The Humber,697,487,616,733,1103,953,741,691,564
+2022-09,Yorkshire and The Humber,702,490,619,737,1112,958,746,696,568
+2022-10,Yorkshire and The Humber,705,491,621,740,1117,962,748,698,570
+2022-11,Yorkshire and The Humber,707,493,623,743,1121,966,751,701,571
+2022-12,Yorkshire and The Humber,711,495,627,746,1125,972,755,704,574
+2023-01,Yorkshire and The Humber,715,498,631,752,1133,978,760,709,578
+2023-02,Yorkshire and The Humber,719,501,633,755,1137,982,764,712,581
+2023-03,Yorkshire and The Humber,724,504,638,760,1146,990,770,717,585
+2023-04,Yorkshire and The Humber,730,508,643,766,1155,999,777,723,590
+2023-05,Yorkshire and The Humber,734,511,647,771,1160,1003,782,727,594
+2023-06,Yorkshire and The Humber,737,513,649,773,1165,1006,785,729,596
+2023-07,Yorkshire and The Humber,742,517,654,779,1174,1014,791,734,600
+2023-08,Yorkshire and The Humber,747,521,658,784,1181,1020,796,739,604
+2023-09,Yorkshire and The Humber,751,524,662,789,1188,1027,801,743,608
+2023-10,Yorkshire and The Humber,757,529,667,795,1198,1035,807,749,613
+2023-11,Yorkshire and The Humber,762,532,671,799,1201,1041,811,753,617
+2023-12,Yorkshire and The Humber,765,535,675,803,1205,1046,815,756,620
+2024-01,Yorkshire and The Humber,769,538,678,807,1211,1050,819,760,623
+2024-02,Yorkshire and The Humber,775,542,683,814,1219,1058,826,767,628
+2024-03,Yorkshire and The Humber,780,546,688,819,1225,1064,832,771,632
+2024-04,Yorkshire and The Humber,785,550,693,824,1230,1070,837,776,636
+2024-05,Yorkshire and The Humber,790,554,697,829,1238,1077,842,781,640
+2024-06,Yorkshire and The Humber,794,557,701,833,1240,1082,846,784,644
+2024-07,Yorkshire and The Humber,794,558,701,834,1238,1082,847,785,644
+2024-08,Yorkshire and The Humber,798,561,705,838,1242,1086,851,789,648
+2024-09,Yorkshire and The Humber,798,561,705,838,1239,1086,851,789,648
+2024-10,Yorkshire and The Humber,802,564,709,842,1245,1091,856,793,651
+2024-11,Yorkshire and The Humber,805,566,711,845,1249,1094,858,795,653
+2024-12,Yorkshire and The Humber,806,568,712,847,1250,1095,858,796,655
+2025-01,Yorkshire and The Humber,809,571,716,851,1256,1100,863,800,658
+2025-02,Yorkshire and The Humber,813,573,719,854,1259,1103,866,803,661
+2025-03,Yorkshire and The Humber,816,576,722,858,1263,1106,870,807,663
+2025-04,Yorkshire and The Humber,816,577,723,858,1262,1105,869,807,664
+2025-05,Yorkshire and The Humber,819,580,726,862,1264,1109,873,810,667
+2025-06,Yorkshire and The Humber,822,583,729,864,1266,1112,875,813,670
+2025-07,Yorkshire and The Humber,822,584,730,865,1264,1112,875,813,672
+2025-08,Yorkshire and The Humber,825,585,732,868,1269,1114,878,816,673
+2025-09,Yorkshire and The Humber,829,588,736,872,1275,1119,882,820,676
+2025-10,Yorkshire and The Humber,833,591,739,876,1280,1123,886,825,679
+2025-11,Yorkshire and The Humber,838,594,743,882,1290,1131,892,829,682
+2025-12,Yorkshire and The Humber,841,597,746,886,1293,1135,896,833,685
+2026-01,Yorkshire and The Humber,843,598,749,888,1296,1136,898,836,686
+2026-02,Yorkshire and The Humber,848,602,753,893,1302,1143,903,840,690
+2026-03,Yorkshire and The Humber,852,604,757,897,1305,1147,907,844,693
+2026-04,Yorkshire and The Humber,855,607,759,901,1309,1151,910,847,695
+2026-05,Yorkshire and The Humber,856,608,761,904,1310,1152,912,848,697
+2026-06,Yorkshire and The Humber,862,612,766,909,1318,1160,919,853,701
+2026-07,Yorkshire and The Humber,864,614,768,912,1320,1162,921,855,703
+2026-08,Yorkshire and The Humber,865,614,769,914,1323,1165,923,857,703
+2026-09,Yorkshire and The Humber,869,615,772,918,1327,1169,927,860,705
+2015-01,East Midlands,566,393,511,608,887,753,591,551,457
+2015-02,East Midlands,567,395,512,609,887,754,591,551,459
+2015-03,East Midlands,568,394,513,609,889,756,592,552,459
+2015-04,East Midlands,568,395,513,610,889,756,593,552,459
+2015-05,East Midlands,569,396,514,611,889,757,594,553,460
+2015-06,East Midlands,570,396,515,613,890,759,595,554,461
+2015-07,East Midlands,572,397,516,614,893,762,596,555,462
+2015-08,East Midlands,573,398,517,615,897,764,598,556,463
+2015-09,East Midlands,575,399,519,617,901,767,599,558,465
+2015-10,East Midlands,576,400,520,619,903,768,601,559,466
+2015-11,East Midlands,576,399,520,619,904,768,601,559,466
+2015-12,East Midlands,576,400,520,619,903,768,601,559,466
+2016-01,East Midlands,578,401,522,621,906,771,603,561,468
+2016-02,East Midlands,578,401,522,621,904,770,603,560,468
+2016-03,East Midlands,579,402,522,623,905,772,604,561,468
+2016-04,East Midlands,580,403,523,624,907,773,605,562,469
+2016-05,East Midlands,582,404,525,626,909,776,607,564,471
+2016-06,East Midlands,583,405,526,628,914,779,609,565,471
+2016-07,East Midlands,586,406,528,630,919,781,612,568,473
+2016-08,East Midlands,588,408,530,632,923,785,614,570,475
+2016-09,East Midlands,589,409,530,634,925,786,615,571,476
+2016-10,East Midlands,591,410,532,636,929,789,617,573,477
+2016-11,East Midlands,593,412,534,639,931,792,620,575,479
+2016-12,East Midlands,595,412,535,640,934,794,621,576,480
+2017-01,East Midlands,597,414,538,643,938,797,624,579,482
+2017-02,East Midlands,599,415,539,646,941,800,626,581,484
+2017-03,East Midlands,600,416,539,646,941,800,627,581,483
+2017-04,East Midlands,602,418,542,648,946,804,629,584,486
+2017-05,East Midlands,603,419,543,649,947,805,630,584,487
+2017-06,East Midlands,604,420,544,651,948,807,632,586,488
+2017-07,East Midlands,606,421,545,652,951,809,633,587,489
+2017-08,East Midlands,608,423,546,654,953,811,635,589,491
+2017-09,East Midlands,609,424,548,656,956,814,637,590,492
+2017-10,East Midlands,611,425,549,658,957,815,639,592,494
+2017-11,East Midlands,614,427,552,661,960,819,642,595,496
+2017-12,East Midlands,616,429,553,662,964,821,644,596,498
+2018-01,East Midlands,616,429,553,662,963,821,643,596,498
+2018-02,East Midlands,618,430,555,665,967,824,646,598,499
+2018-03,East Midlands,619,431,556,666,968,825,647,599,500
+2018-04,East Midlands,620,432,557,667,970,827,649,600,501
+2018-05,East Midlands,622,433,559,669,973,830,651,602,503
+2018-06,East Midlands,624,435,561,671,976,832,653,604,505
+2018-07,East Midlands,626,436,563,673,978,834,655,606,507
+2018-08,East Midlands,628,436,564,675,982,836,657,608,507
+2018-09,East Midlands,635,442,570,683,993,846,666,615,513
+2018-10,East Midlands,638,444,573,686,1000,850,669,618,516
+2018-11,East Midlands,643,447,577,691,1007,855,673,622,520
+2018-12,East Midlands,642,446,577,690,1008,855,673,622,519
+2019-01,East Midlands,645,448,578,693,1011,857,675,625,520
+2019-02,East Midlands,645,449,579,694,1011,857,676,625,521
+2019-03,East Midlands,646,450,580,694,1011,858,677,627,522
+2019-04,East Midlands,647,451,580,695,1011,858,678,628,522
+2019-05,East Midlands,648,452,581,697,1013,860,680,629,524
+2019-06,East Midlands,649,453,582,697,1012,861,680,629,524
+2019-07,East Midlands,650,454,583,698,1012,862,681,631,525
+2019-08,East Midlands,651,455,584,699,1014,863,682,632,526
+2019-09,East Midlands,653,456,585,700,1019,865,684,634,527
+2019-10,East Midlands,656,458,587,704,1023,869,687,637,529
+2019-11,East Midlands,657,460,589,705,1025,870,688,638,531
+2019-12,East Midlands,656,460,588,704,1022,870,687,637,530
+2020-01,East Midlands,656,459,588,704,1019,869,687,637,530
+2020-02,East Midlands,658,461,589,706,1022,871,689,639,531
+2020-03,East Midlands,658,462,590,706,1021,872,690,639,532
+2020-04,East Midlands,660,463,591,708,1023,874,691,641,533
+2020-05,East Midlands,661,464,592,709,1024,875,692,642,534
+2020-06,East Midlands,661,464,593,710,1025,876,693,642,534
+2020-07,East Midlands,662,465,593,710,1025,876,693,642,535
+2020-08,East Midlands,663,466,594,711,1029,878,694,644,536
+2020-09,East Midlands,665,467,596,713,1033,880,696,646,537
+2020-10,East Midlands,667,468,597,715,1036,882,698,648,539
+2020-11,East Midlands,668,468,598,717,1035,884,699,649,539
+2020-12,East Midlands,670,470,599,719,1037,886,701,651,540
+2021-01,East Midlands,671,470,601,720,1037,888,702,652,541
+2021-02,East Midlands,673,472,603,723,1044,890,704,655,544
+2021-03,East Midlands,675,473,604,725,1048,893,706,657,545
+2021-04,East Midlands,677,475,606,727,1053,896,708,659,546
+2021-05,East Midlands,681,477,609,731,1058,900,712,663,549
+2021-06,East Midlands,681,477,609,732,1060,902,712,663,548
+2021-07,East Midlands,683,478,611,734,1064,905,714,665,550
+2021-08,East Midlands,686,479,613,737,1070,908,717,668,552
+2021-09,East Midlands,688,480,615,740,1078,912,719,671,553
+2021-10,East Midlands,690,481,617,742,1083,915,721,674,555
+2021-11,East Midlands,693,482,619,745,1088,918,724,676,556
+2021-12,East Midlands,697,485,622,750,1096,924,728,680,559
+2022-01,East Midlands,699,486,624,753,1099,928,731,683,560
+2022-02,East Midlands,703,488,627,757,1106,933,734,686,563
+2022-03,East Midlands,707,490,631,761,1112,938,738,690,566
+2022-04,East Midlands,710,493,634,764,1116,943,741,694,568
+2022-05,East Midlands,712,495,635,767,1121,947,743,696,570
+2022-06,East Midlands,715,497,638,770,1126,951,746,698,573
+2022-07,East Midlands,717,498,640,772,1129,954,748,700,574
+2022-08,East Midlands,721,500,643,776,1135,959,752,704,577
+2022-09,East Midlands,725,503,646,780,1142,963,756,708,580
+2022-10,East Midlands,729,506,649,784,1150,969,760,712,583
+2022-11,East Midlands,736,510,656,792,1160,978,768,719,588
+2022-12,East Midlands,738,511,657,794,1163,982,770,721,590
+2023-01,East Midlands,740,513,659,796,1166,985,772,723,591
+2023-02,East Midlands,741,513,660,797,1166,986,773,724,592
+2023-03,East Midlands,745,516,663,801,1173,991,778,727,596
+2023-04,East Midlands,748,518,667,805,1177,996,782,730,598
+2023-05,East Midlands,753,522,671,810,1183,1002,787,734,602
+2023-06,East Midlands,757,525,674,814,1190,1007,792,738,606
+2023-07,East Midlands,761,527,677,819,1197,1013,796,742,609
+2023-08,East Midlands,766,531,682,824,1205,1019,801,747,613
+2023-09,East Midlands,772,535,687,830,1214,1028,808,752,618
+2023-10,East Midlands,778,539,692,836,1223,1035,813,758,623
+2023-11,East Midlands,787,546,700,846,1235,1046,822,767,630
+2023-12,East Midlands,791,549,704,850,1240,1052,827,771,634
+2024-01,East Midlands,795,553,708,855,1246,1058,832,775,638
+2024-02,East Midlands,801,557,714,862,1254,1065,838,781,642
+2024-03,East Midlands,806,561,718,867,1260,1071,844,785,646
+2024-04,East Midlands,812,565,723,873,1266,1078,850,790,651
+2024-05,East Midlands,818,570,729,879,1276,1086,856,797,656
+2024-06,East Midlands,827,577,738,889,1286,1097,866,806,664
+2024-07,East Midlands,832,581,742,894,1291,1103,871,810,668
+2024-08,East Midlands,837,584,746,899,1296,1108,876,815,671
+2024-09,East Midlands,840,587,749,903,1298,1113,880,819,674
+2024-10,East Midlands,849,593,757,912,1312,1124,889,827,681
+2024-11,East Midlands,853,596,760,917,1318,1129,893,831,684
+2024-12,East Midlands,856,599,764,920,1323,1133,896,834,688
+2025-01,East Midlands,861,603,768,925,1330,1139,901,839,692
+2025-02,East Midlands,868,608,775,933,1339,1147,908,846,698
+2025-03,East Midlands,873,612,780,939,1346,1153,914,851,703
+2025-04,East Midlands,877,616,784,943,1350,1157,918,855,706
+2025-05,East Midlands,881,619,788,947,1354,1162,922,859,709
+2025-06,East Midlands,885,623,792,951,1358,1166,925,863,714
+2025-07,East Midlands,886,624,792,951,1356,1165,926,864,715
+2025-08,East Midlands,889,626,796,955,1362,1169,930,868,718
+2025-09,East Midlands,894,630,800,960,1370,1175,934,873,721
+2025-10,East Midlands,897,631,802,964,1374,1179,938,876,723
+2025-11,East Midlands,901,634,806,968,1382,1185,942,880,726
+2025-12,East Midlands,901,634,806,969,1380,1185,943,881,725
+2026-01,East Midlands,906,638,811,974,1387,1191,948,885,730
+2026-02,East Midlands,909,640,814,977,1390,1194,951,888,732
+2026-03,East Midlands,910,641,815,979,1390,1195,953,889,732
+2026-04,East Midlands,911,641,816,980,1390,1195,953,890,733
+2026-05,East Midlands,914,644,818,984,1394,1198,957,893,735
+2026-06,East Midlands,918,647,822,988,1398,1203,961,897,738
+2026-07,East Midlands,918,647,822,988,1398,1203,961,897,738
+2026-08,East Midlands,922,649,826,994,1406,1210,967,902,741
+2026-09,East Midlands,928,652,831,1000,1413,1217,973,907,744
+2015-01,West Midlands Region,615,442,560,655,955,831,646,604,504
+2015-02,West Midlands Region,617,444,562,657,956,834,648,606,506
+2015-03,West Midlands Region,619,445,564,659,962,838,650,609,508
+2015-04,West Midlands Region,620,446,565,660,962,839,651,609,509
+2015-05,West Midlands Region,622,447,567,663,965,842,654,611,511
+2015-06,West Midlands Region,623,447,568,664,964,843,655,612,511
+2015-07,West Midlands Region,624,449,569,665,967,846,656,612,512
+2015-08,West Midlands Region,625,449,570,666,970,848,657,613,513
+2015-09,West Midlands Region,627,450,571,668,974,850,659,615,514
+2015-10,West Midlands Region,628,451,572,669,975,852,660,616,515
+2015-11,West Midlands Region,629,451,573,670,977,853,661,617,516
+2015-12,West Midlands Region,633,455,577,675,984,859,666,622,520
+2016-01,West Midlands Region,634,456,579,676,985,861,667,622,521
+2016-02,West Midlands Region,636,457,580,678,985,862,669,624,523
+2016-03,West Midlands Region,638,459,581,681,988,866,671,625,524
+2016-04,West Midlands Region,639,459,583,682,991,868,673,626,525
+2016-05,West Midlands Region,640,460,583,682,990,868,673,627,525
+2016-06,West Midlands Region,641,460,584,684,995,871,675,628,526
+2016-07,West Midlands Region,642,461,585,685,998,873,676,630,527
+2016-08,West Midlands Region,645,463,587,688,1004,877,679,633,530
+2016-09,West Midlands Region,647,465,589,691,1008,880,681,635,531
+2016-10,West Midlands Region,650,466,591,693,1013,884,684,637,533
+2016-11,West Midlands Region,651,467,593,695,1013,885,686,639,534
+2016-12,West Midlands Region,653,468,594,696,1016,887,687,640,535
+2017-01,West Midlands Region,654,469,595,698,1019,889,689,641,536
+2017-02,West Midlands Region,654,468,594,698,1018,888,688,641,535
+2017-03,West Midlands Region,655,469,594,699,1019,889,689,642,536
+2017-04,West Midlands Region,657,471,597,700,1022,892,691,644,538
+2017-05,West Midlands Region,658,472,598,702,1024,894,693,644,539
+2017-06,West Midlands Region,661,475,601,705,1028,898,696,648,542
+2017-07,West Midlands Region,664,477,603,708,1033,902,699,651,544
+2017-08,West Midlands Region,666,479,604,710,1035,904,701,652,546
+2017-09,West Midlands Region,667,480,605,711,1038,906,702,653,547
+2017-10,West Midlands Region,667,480,606,712,1036,905,703,653,547
+2017-11,West Midlands Region,668,481,606,712,1036,906,704,654,548
+2017-12,West Midlands Region,669,482,607,713,1039,908,705,655,549
+2018-01,West Midlands Region,670,482,608,714,1039,910,706,656,550
+2018-02,West Midlands Region,672,484,610,716,1043,912,708,658,551
+2018-03,West Midlands Region,673,484,611,717,1043,913,709,659,552
+2018-04,West Midlands Region,675,486,612,719,1046,916,712,661,554
+2018-05,West Midlands Region,676,487,613,720,1048,917,713,662,554
+2018-06,West Midlands Region,676,487,614,721,1049,918,713,662,555
+2018-07,West Midlands Region,678,488,615,722,1050,919,715,663,556
+2018-08,West Midlands Region,678,488,616,723,1053,920,716,664,556
+2018-09,West Midlands Region,680,489,617,725,1055,922,717,666,557
+2018-10,West Midlands Region,683,491,619,728,1062,926,720,669,559
+2018-11,West Midlands Region,684,492,620,729,1064,927,721,670,560
+2018-12,West Midlands Region,685,492,621,730,1066,928,722,671,561
+2019-01,West Midlands Region,686,493,622,732,1069,930,724,673,562
+2019-02,West Midlands Region,687,494,622,732,1069,930,725,674,562
+2019-03,West Midlands Region,687,495,622,732,1067,928,724,674,563
+2019-04,West Midlands Region,688,496,623,734,1067,930,726,676,564
+2019-05,West Midlands Region,689,496,623,734,1068,930,727,676,564
+2019-06,West Midlands Region,688,496,623,733,1066,929,726,675,564
+2019-07,West Midlands Region,689,497,623,734,1064,930,727,676,564
+2019-08,West Midlands Region,691,499,625,736,1069,932,729,678,566
+2019-09,West Midlands Region,694,501,628,739,1075,936,732,681,568
+2019-10,West Midlands Region,697,503,630,742,1079,940,734,684,570
+2019-11,West Midlands Region,697,504,631,742,1080,941,735,685,571
+2019-12,West Midlands Region,698,505,631,742,1079,941,736,685,572
+2020-01,West Midlands Region,699,506,632,744,1078,942,737,687,572
+2020-02,West Midlands Region,700,507,633,745,1079,944,738,688,573
+2020-03,West Midlands Region,701,507,633,746,1079,944,739,688,574
+2020-04,West Midlands Region,701,507,633,746,1078,944,739,688,574
+2020-05,West Midlands Region,704,510,636,749,1082,948,742,691,576
+2020-06,West Midlands Region,705,511,637,750,1083,950,743,692,577
+2020-07,West Midlands Region,706,512,638,751,1085,951,744,693,578
+2020-08,West Midlands Region,709,514,641,754,1091,956,747,696,581
+2020-09,West Midlands Region,710,515,642,755,1094,956,748,698,582
+2020-10,West Midlands Region,712,516,643,757,1097,959,749,700,583
+2020-11,West Midlands Region,711,515,642,757,1094,958,749,699,582
+2020-12,West Midlands Region,709,514,641,755,1090,955,747,697,580
+2021-01,West Midlands Region,713,516,644,759,1094,960,751,700,584
+2021-02,West Midlands Region,713,516,644,760,1097,959,751,701,584
+2021-03,West Midlands Region,716,519,647,763,1104,964,754,705,586
+2021-04,West Midlands Region,720,521,650,767,1111,969,758,709,589
+2021-05,West Midlands Region,724,523,653,772,1117,974,762,712,592
+2021-06,West Midlands Region,726,525,655,775,1122,979,765,715,593
+2021-07,West Midlands Region,730,527,658,778,1128,984,768,718,595
+2021-08,West Midlands Region,732,528,660,781,1132,986,770,721,597
+2021-09,West Midlands Region,734,529,661,783,1140,989,772,723,598
+2021-10,West Midlands Region,735,529,662,785,1145,991,773,725,599
+2021-11,West Midlands Region,738,530,665,788,1151,996,777,729,601
+2021-12,West Midlands Region,742,532,668,793,1158,1001,780,732,603
+2022-01,West Midlands Region,745,534,671,797,1163,1007,784,736,606
+2022-02,West Midlands Region,749,536,674,801,1170,1011,788,740,608
+2022-03,West Midlands Region,746,534,671,797,1165,1008,784,737,606
+2022-04,West Midlands Region,749,536,674,800,1168,1012,787,740,608
+2022-05,West Midlands Region,751,538,676,803,1174,1016,790,742,610
+2022-06,West Midlands Region,757,542,681,809,1182,1024,796,748,615
+2022-07,West Midlands Region,760,545,684,811,1188,1029,798,750,617
+2022-08,West Midlands Region,763,546,686,815,1192,1032,801,754,619
+2022-09,West Midlands Region,765,548,688,817,1197,1034,804,757,621
+2022-10,West Midlands Region,768,550,690,820,1202,1038,806,759,623
+2022-11,West Midlands Region,771,552,693,824,1206,1043,810,762,625
+2022-12,West Midlands Region,775,555,696,828,1212,1049,815,766,629
+2023-01,West Midlands Region,778,556,699,831,1216,1053,818,769,630
+2023-02,West Midlands Region,781,559,702,835,1220,1058,821,772,634
+2023-03,West Midlands Region,787,563,706,840,1229,1065,828,778,638
+2023-04,West Midlands Region,794,568,713,848,1239,1075,836,785,644
+2023-05,West Midlands Region,803,575,722,858,1252,1087,846,793,652
+2023-06,West Midlands Region,808,579,726,863,1260,1093,852,798,656
+2023-07,West Midlands Region,811,581,729,866,1266,1098,855,801,659
+2023-08,West Midlands Region,817,586,734,873,1274,1106,861,807,664
+2023-09,West Midlands Region,823,590,739,879,1283,1114,867,812,668
+2023-10,West Midlands Region,829,594,744,884,1292,1121,873,817,673
+2023-11,West Midlands Region,833,598,749,888,1296,1127,877,822,677
+2023-12,West Midlands Region,837,601,752,893,1300,1132,881,826,681
+2024-01,West Midlands Region,848,609,762,904,1316,1147,893,836,690
+2024-02,West Midlands Region,853,613,767,911,1323,1154,899,842,694
+2024-03,West Midlands Region,860,618,773,918,1332,1162,906,848,699
+2024-04,West Midlands Region,862,620,775,920,1333,1164,909,850,701
+2024-05,West Midlands Region,868,624,780,925,1341,1171,914,856,706
+2024-06,West Midlands Region,876,631,787,934,1349,1181,923,863,713
+2024-07,West Midlands Region,884,637,794,943,1359,1192,932,871,719
+2024-08,West Midlands Region,892,643,802,952,1370,1202,941,880,726
+2024-09,West Midlands Region,896,646,805,956,1373,1207,945,883,729
+2024-10,West Midlands Region,901,649,810,961,1381,1213,950,888,733
+2024-11,West Midlands Region,905,653,814,966,1388,1219,955,893,736
+2024-12,West Midlands Region,910,657,818,971,1394,1224,959,897,741
+2025-01,West Midlands Region,912,659,821,974,1397,1228,962,900,743
+2025-02,West Midlands Region,917,663,826,979,1403,1232,967,904,747
+2025-03,West Midlands Region,920,665,828,982,1405,1234,970,907,750
+2025-04,West Midlands Region,923,668,831,986,1409,1238,973,911,753
+2025-05,West Midlands Region,927,671,836,990,1412,1242,978,915,757
+2025-06,West Midlands Region,931,675,839,993,1415,1245,980,919,760
+2025-07,West Midlands Region,932,677,840,994,1414,1245,981,919,762
+2025-08,West Midlands Region,935,679,844,998,1420,1248,985,924,765
+2025-09,West Midlands Region,942,684,849,1005,1430,1257,991,930,770
+2025-10,West Midlands Region,948,688,855,1012,1439,1265,998,937,774
+2025-11,West Midlands Region,955,692,861,1020,1452,1275,1006,944,779
+2025-12,West Midlands Region,957,694,863,1023,1453,1278,1008,947,781
+2026-01,West Midlands Region,962,698,867,1028,1460,1282,1013,952,784
+2026-02,West Midlands Region,962,698,868,1028,1460,1282,1014,952,785
+2026-03,West Midlands Region,964,699,870,1030,1459,1284,1016,954,786
+2026-04,West Midlands Region,964,699,870,1031,1460,1284,1016,955,786
+2026-05,West Midlands Region,966,701,872,1034,1462,1286,1019,957,788
+2026-06,West Midlands Region,971,705,876,1039,1469,1292,1025,961,792
+2026-07,West Midlands Region,974,707,879,1042,1472,1295,1027,964,794
+2026-08,West Midlands Region,982,711,885,1051,1484,1306,1036,972,799
+2026-09,West Midlands Region,983,711,887,1053,1485,1308,1038,973,799
+2015-01,East of England,800,548,717,858,1253,1102,866,784,638
+2015-02,East of England,805,551,721,863,1259,1108,871,788,642
+2015-03,East of England,808,553,724,865,1265,1113,874,791,644
+2015-04,East of England,811,555,726,869,1269,1117,877,793,647
+2015-05,East of England,814,557,729,873,1273,1122,881,797,649
+2015-06,East of England,817,559,732,876,1277,1127,885,800,652
+2015-07,East of England,820,561,734,879,1282,1131,888,802,654
+2015-08,East of England,824,563,737,882,1290,1137,892,805,657
+2015-09,East of England,827,565,741,887,1298,1143,896,809,660
+2015-10,East of England,832,568,745,892,1305,1149,901,813,663
+2015-11,East of England,835,570,748,896,1311,1154,905,816,666
+2015-12,East of England,839,572,750,899,1316,1158,909,819,669
+2016-01,East of England,842,575,754,903,1319,1163,912,823,672
+2016-02,East of England,846,579,758,908,1325,1168,917,827,676
+2016-03,East of England,851,582,761,913,1331,1174,922,831,679
+2016-04,East of England,855,584,765,917,1338,1181,926,834,682
+2016-05,East of England,858,586,768,920,1343,1185,930,837,684
+2016-06,East of England,862,588,771,925,1352,1192,934,841,687
+2016-07,East of England,865,590,774,929,1358,1196,938,845,690
+2016-08,East of England,869,593,776,932,1365,1202,942,848,692
+2016-09,East of England,873,595,780,937,1372,1208,946,852,695
+2016-10,East of England,877,598,783,941,1379,1214,951,856,698
+2016-11,East of England,880,600,786,945,1382,1217,954,859,701
+2016-12,East of England,882,601,788,947,1387,1221,956,861,702
+2017-01,East of England,887,604,792,953,1393,1227,962,865,706
+2017-02,East of England,889,606,794,956,1397,1230,965,868,708
+2017-03,East of England,892,608,796,959,1401,1234,968,871,710
+2017-04,East of England,895,611,799,961,1406,1238,971,873,712
+2017-05,East of England,896,612,800,962,1408,1239,972,874,713
+2017-06,East of England,898,614,802,965,1410,1242,975,877,716
+2017-07,East of England,901,615,804,967,1414,1245,977,879,717
+2017-08,East of England,902,617,805,969,1415,1247,979,880,719
+2017-09,East of England,905,619,807,972,1421,1252,982,883,721
+2017-10,East of England,907,621,810,975,1422,1253,985,885,723
+2017-11,East of England,908,622,810,976,1421,1253,986,886,724
+2017-12,East of England,910,623,811,977,1426,1256,988,888,725
+2018-01,East of England,911,624,813,978,1426,1258,988,888,727
+2018-02,East of England,913,626,815,981,1430,1262,992,891,728
+2018-03,East of England,914,627,816,982,1431,1262,993,892,729
+2018-04,East of England,916,628,816,983,1432,1264,995,893,730
+2018-05,East of England,916,628,817,983,1433,1264,995,893,730
+2018-06,East of England,917,628,818,985,1435,1265,996,894,731
+2018-07,East of England,918,629,819,986,1435,1267,998,895,732
+2018-08,East of England,920,630,821,988,1439,1269,1000,897,733
+2018-09,East of England,922,632,822,990,1443,1271,1002,900,735
+2018-10,East of England,923,632,822,991,1448,1274,1003,901,735
+2018-11,East of England,925,634,824,993,1451,1276,1005,903,737
+2018-12,East of England,925,633,825,994,1453,1276,1006,903,737
+2019-01,East of England,927,635,826,996,1455,1277,1008,906,738
+2019-02,East of England,930,637,828,998,1458,1280,1011,909,740
+2019-03,East of England,930,638,829,998,1457,1278,1011,910,741
+2019-04,East of England,931,639,829,1000,1456,1279,1012,911,742
+2019-05,East of England,933,642,831,1002,1459,1282,1014,913,744
+2019-06,East of England,934,642,832,1002,1459,1282,1015,913,745
+2019-07,East of England,936,644,833,1004,1459,1284,1017,915,746
+2019-08,East of England,938,646,835,1006,1462,1286,1019,917,748
+2019-09,East of England,940,647,837,1007,1469,1290,1021,920,749
+2019-10,East of England,941,648,837,1009,1470,1291,1022,921,750
+2019-11,East of England,942,649,838,1009,1471,1292,1023,922,751
+2019-12,East of England,942,650,838,1010,1469,1292,1024,922,752
+2020-01,East of England,944,652,840,1012,1468,1293,1025,924,753
+2020-02,East of England,946,653,841,1014,1471,1296,1027,926,754
+2020-03,East of England,946,653,842,1014,1469,1295,1027,926,754
+2020-04,East of England,946,654,842,1014,1469,1296,1027,926,754
+2020-05,East of England,947,654,843,1015,1469,1296,1029,926,755
+2020-06,East of England,947,655,843,1015,1469,1297,1029,926,755
+2020-07,East of England,946,655,843,1015,1469,1296,1028,926,755
+2020-08,East of England,948,656,844,1016,1473,1298,1029,928,756
+2020-09,East of England,949,657,844,1017,1476,1299,1030,929,757
+2020-10,East of England,951,658,846,1019,1479,1302,1032,932,758
+2020-11,East of England,951,658,846,1020,1477,1303,1032,932,759
+2020-12,East of England,954,660,849,1024,1481,1306,1036,935,761
+2021-01,East of England,957,662,851,1027,1482,1310,1039,937,763
+2021-02,East of England,964,666,858,1036,1497,1319,1046,945,769
+2021-03,East of England,967,668,860,1039,1505,1324,1050,948,770
+2021-04,East of England,970,670,863,1042,1511,1328,1053,951,773
+2021-05,East of England,973,671,865,1046,1517,1333,1057,955,775
+2021-06,East of England,977,673,868,1050,1524,1339,1061,959,777
+2021-07,East of England,980,675,870,1054,1529,1344,1064,961,779
+2021-08,East of England,984,677,873,1058,1538,1349,1068,966,782
+2021-09,East of England,987,679,876,1062,1550,1355,1071,970,784
+2021-10,East of England,992,681,880,1067,1560,1362,1077,975,787
+2021-11,East of England,996,683,883,1072,1568,1368,1081,980,790
+2021-12,East of England,1000,685,886,1078,1578,1375,1086,984,792
+2022-01,East of England,1004,687,889,1082,1582,1381,1090,987,794
+2022-02,East of England,1007,689,893,1086,1590,1386,1094,991,797
+2022-03,East of England,1011,691,895,1089,1596,1391,1097,994,799
+2022-04,East of England,1014,694,898,1094,1599,1397,1100,998,802
+2022-05,East of England,1018,696,901,1097,1607,1402,1104,1001,805
+2022-06,East of England,1022,699,905,1101,1614,1408,1108,1005,808
+2022-07,East of England,1026,702,909,1105,1621,1415,1112,1009,812
+2022-08,East of England,1028,703,910,1108,1624,1417,1115,1012,813
+2022-09,East of England,1031,706,913,1111,1630,1419,1117,1015,816
+2022-10,East of England,1034,707,915,1115,1637,1425,1121,1019,818
+2022-11,East of England,1038,709,918,1119,1642,1430,1125,1023,820
+2022-12,East of England,1043,713,922,1124,1648,1438,1131,1027,824
+2023-01,East of England,1048,716,926,1129,1656,1445,1136,1031,828
+2023-02,East of England,1052,719,930,1133,1661,1450,1140,1035,831
+2023-03,East of England,1058,723,935,1139,1671,1459,1147,1041,837
+2023-04,East of England,1062,726,940,1144,1677,1466,1152,1045,840
+2023-05,East of England,1067,729,944,1150,1683,1471,1158,1049,844
+2023-06,East of England,1072,733,948,1155,1691,1478,1165,1053,849
+2023-07,East of England,1079,738,955,1162,1703,1488,1172,1060,854
+2023-08,East of England,1085,742,959,1169,1712,1496,1179,1066,859
+2023-09,East of England,1091,747,965,1175,1722,1505,1185,1072,864
+2023-10,East of England,1098,751,971,1182,1733,1514,1192,1078,870
+2023-11,East of England,1104,755,976,1188,1738,1521,1198,1084,875
+2023-12,East of England,1110,760,982,1195,1745,1529,1205,1090,880
+2024-01,East of England,1116,765,986,1201,1753,1538,1212,1095,884
+2024-02,East of England,1126,772,995,1212,1767,1550,1223,1105,892
+2024-03,East of England,1130,775,1000,1217,1772,1557,1229,1109,896
+2024-04,East of England,1136,780,1005,1223,1778,1564,1235,1115,901
+2024-05,East of England,1142,785,1011,1230,1788,1572,1241,1121,906
+2024-06,East of England,1149,790,1017,1237,1793,1580,1250,1127,912
+2024-07,East of England,1158,797,1025,1247,1804,1591,1260,1136,919
+2024-08,East of England,1167,803,1032,1256,1814,1602,1269,1145,926
+2024-09,East of England,1177,811,1042,1268,1826,1615,1280,1155,934
+2024-10,East of England,1185,816,1049,1276,1840,1626,1289,1163,940
+2024-11,East of England,1196,824,1058,1289,1857,1641,1301,1174,949
+2024-12,East of England,1203,830,1065,1296,1867,1650,1308,1181,955
+2025-01,East of England,1209,834,1071,1303,1876,1659,1315,1187,960
+2025-02,East of England,1217,840,1079,1312,1886,1668,1324,1195,967
+2025-03,East of England,1223,845,1084,1318,1892,1674,1330,1200,972
+2025-04,East of England,1228,849,1089,1323,1898,1679,1335,1206,977
+2025-05,East of England,1236,855,1097,1332,1908,1689,1344,1214,984
+2025-06,East of England,1240,859,1101,1335,1910,1692,1347,1218,987
+2025-07,East of England,1239,860,1101,1334,1906,1689,1346,1217,989
+2025-08,East of England,1245,864,1106,1341,1916,1696,1352,1224,993
+2025-09,East of England,1251,868,1111,1347,1925,1703,1358,1230,997
+2025-10,East of England,1255,870,1114,1352,1929,1708,1363,1234,1000
+2025-11,East of England,1261,874,1119,1359,1943,1718,1370,1240,1004
+2025-12,East of England,1266,878,1124,1365,1948,1725,1376,1246,1007
+2026-01,East of England,1268,880,1126,1367,1950,1725,1378,1248,1009
+2026-02,East of England,1269,881,1127,1368,1950,1725,1379,1248,1010
+2026-03,East of England,1274,884,1132,1374,1954,1732,1385,1254,1014
+2026-04,East of England,1278,887,1135,1378,1959,1736,1388,1258,1017
+2026-05,East of England,1280,889,1138,1382,1962,1739,1392,1261,1019
+2026-06,East of England,1281,890,1138,1383,1961,1740,1393,1261,1020
+2026-07,East of England,1285,893,1142,1387,1966,1745,1397,1265,1023
+2026-08,East of England,1289,894,1145,1392,1974,1752,1402,1269,1024
+2026-09,East of England,1298,900,1153,1403,1987,1764,1414,1279,1030
+2015-01,London,1580,1170,1520,1775,2527,1980,2006,1919,1390
+2015-02,London,1583,1173,1524,1781,2530,1989,2010,1923,1393
+2015-03,London,1590,1178,1531,1788,2545,1994,2018,1932,1400
+2015-04,London,1602,1187,1543,1803,2563,2014,2034,1945,1411
+2015-05,London,1616,1196,1557,1819,2582,2033,2050,1961,1423
+2015-06,London,1620,1200,1563,1825,2585,2032,2054,1967,1428
+2015-07,London,1624,1204,1566,1828,2590,2042,2058,1969,1431
+2015-08,London,1634,1210,1577,1841,2610,2057,2072,1981,1440
+2015-09,London,1643,1215,1584,1851,2629,2064,2084,1994,1446
+2015-10,London,1644,1217,1586,1854,2628,2058,2084,1994,1448
+2015-11,London,1644,1216,1586,1855,2633,2062,2085,1995,1448
+2015-12,London,1648,1220,1591,1861,2639,2064,2090,2000,1453
+2016-01,London,1654,1227,1598,1868,2640,2064,2093,2003,1460
+2016-02,London,1655,1228,1601,1872,2641,2065,2092,2005,1462
+2016-03,London,1664,1235,1607,1882,2656,2081,2108,2016,1469
+2016-04,London,1666,1236,1611,1886,2659,2081,2108,2019,1472
+2016-05,London,1674,1243,1619,1894,2668,2091,2119,2027,1479
+2016-06,London,1679,1245,1622,1899,2681,2097,2125,2035,1481
+2016-07,London,1687,1251,1630,1909,2699,2108,2138,2046,1489
+2016-08,London,1691,1253,1633,1913,2707,2114,2142,2051,1492
+2016-09,London,1695,1257,1637,1918,2715,2115,2145,2057,1496
+2016-10,London,1696,1258,1637,1919,2716,2118,2147,2057,1496
+2016-11,London,1700,1260,1640,1925,2719,2123,2153,2061,1499
+2016-12,London,1702,1262,1643,1927,2727,2125,2156,2065,1502
+2017-01,London,1705,1264,1646,1930,2729,2124,2159,2067,1504
+2017-02,London,1702,1263,1643,1928,2726,2116,2154,2066,1502
+2017-03,London,1704,1264,1643,1929,2730,2119,2160,2068,1503
+2017-04,London,1706,1267,1646,1930,2731,2123,2161,2068,1506
+2017-05,London,1701,1266,1642,1925,2722,2112,2152,2062,1503
+2017-06,London,1705,1269,1646,1930,2726,2119,2157,2066,1506
+2017-07,London,1711,1272,1651,1937,2739,2125,2167,2075,1510
+2017-08,London,1706,1270,1645,1931,2727,2119,2157,2067,1507
+2017-09,London,1698,1265,1638,1921,2717,2107,2147,2058,1500
+2017-10,London,1700,1268,1640,1924,2713,2106,2147,2059,1503
+2017-11,London,1699,1267,1639,1923,2709,2099,2144,2057,1502
+2017-12,London,1697,1266,1637,1919,2708,2098,2141,2054,1501
+2018-01,London,1689,1263,1633,1912,2690,2091,2128,2043,1496
+2018-02,London,1694,1266,1635,1915,2698,2095,2139,2049,1499
+2018-03,London,1683,1261,1628,1904,2678,2085,2116,2034,1492
+2018-04,London,1678,1259,1622,1897,2666,2082,2110,2026,1488
+2018-05,London,1675,1257,1620,1892,2660,2081,2108,2022,1486
+2018-06,London,1676,1256,1620,1894,2663,2080,2108,2024,1485
+2018-07,London,1680,1259,1624,1899,2668,2084,2115,2028,1489
+2018-08,London,1683,1260,1627,1903,2678,2089,2121,2033,1491
+2018-09,London,1681,1260,1624,1900,2675,2088,2120,2032,1489
+2018-10,London,1686,1262,1626,1906,2689,2096,2133,2040,1492
+2018-11,London,1691,1265,1631,1911,2698,2100,2140,2045,1495
+2018-12,London,1696,1265,1635,1916,2713,2104,2150,2054,1499
+2019-01,London,1695,1266,1632,1914,2709,2100,2148,2054,1497
+2019-02,London,1701,1271,1638,1921,2718,2106,2156,2061,1503
+2019-03,London,1700,1272,1637,1919,2715,2102,2151,2060,1502
+2019-04,London,1698,1271,1634,1917,2707,2099,2148,2056,1500
+2019-05,London,1714,1284,1649,1933,2733,2121,2173,2076,1515
+2019-06,London,1712,1283,1648,1930,2726,2117,2167,2071,1513
+2019-07,London,1712,1285,1648,1931,2722,2117,2164,2072,1515
+2019-08,London,1716,1288,1650,1934,2731,2122,2171,2077,1517
+2019-09,London,1723,1292,1656,1939,2746,2136,2185,2087,1522
+2019-10,London,1728,1297,1659,1945,2753,2142,2191,2093,1526
+2019-11,London,1733,1300,1663,1949,2759,2152,2199,2097,1530
+2019-12,London,1737,1305,1667,1952,2761,2157,2204,2102,1535
+2020-01,London,1738,1307,1669,1955,2757,2158,2202,2103,1536
+2020-02,London,1744,1313,1675,1962,2765,2168,2208,2110,1542
+2020-03,London,1748,1316,1678,1966,2768,2171,2213,2114,1545
+2020-04,London,1741,1312,1672,1958,2757,2168,2207,2102,1540
+2020-05,London,1742,1313,1673,1961,2758,2169,2210,2103,1541
+2020-06,London,1741,1314,1673,1958,2752,2173,2201,2101,1541
+2020-07,London,1745,1316,1676,1962,2759,2175,2208,2105,1544
+2020-08,London,1744,1316,1675,1962,2762,2177,2210,2105,1543
+2020-09,London,1745,1316,1675,1962,2766,2177,2211,2108,1543
+2020-10,London,1745,1316,1674,1962,2767,2178,2212,2109,1543
+2020-11,London,1742,1313,1672,1961,2758,2175,2204,2105,1540
+2020-12,London,1737,1310,1668,1956,2748,2172,2197,2099,1536
+2021-01,London,1735,1310,1667,1956,2738,2169,2189,2096,1536
+2021-02,London,1735,1307,1666,1955,2746,2171,2190,2098,1534
+2021-03,London,1731,1304,1661,1951,2747,2167,2187,2096,1530
+2021-04,London,1721,1296,1651,1939,2731,2158,2177,2083,1520
+2021-05,London,1712,1289,1642,1929,2719,2151,2170,2073,1512
+2021-06,London,1713,1289,1643,1932,2722,2153,2172,2076,1513
+2021-07,London,1706,1283,1635,1924,2713,2147,2165,2067,1505
+2021-08,London,1706,1283,1636,1926,2721,2147,2165,2070,1506
+2021-09,London,1709,1282,1637,1929,2738,2155,2172,2077,1506
+2021-10,London,1713,1284,1640,1935,2752,2163,2181,2085,1509
+2021-11,London,1716,1285,1644,1941,2761,2167,2184,2091,1511
+2021-12,London,1724,1288,1650,1951,2780,2180,2196,2104,1516
+2022-01,London,1728,1290,1654,1957,2785,2187,2202,2110,1520
+2022-02,London,1735,1294,1660,1966,2803,2193,2210,2120,1525
+2022-03,London,1739,1297,1664,1971,2811,2201,2216,2127,1529
+2022-04,London,1746,1302,1670,1979,2817,2208,2221,2135,1535
+2022-05,London,1750,1305,1674,1983,2825,2215,2228,2139,1538
+2022-06,London,1754,1308,1677,1987,2832,2221,2232,2144,1542
+2022-07,London,1763,1315,1686,1996,2846,2233,2242,2155,1550
+2022-08,London,1773,1322,1695,2007,2863,2243,2256,2168,1558
+2022-09,London,1785,1332,1705,2022,2888,2257,2271,2186,1569
+2022-10,London,1791,1335,1710,2029,2900,2264,2278,2194,1573
+2022-11,London,1806,1346,1724,2047,2924,2283,2297,2214,1586
+2022-12,London,1818,1354,1736,2060,2941,2298,2310,2228,1597
+2023-01,London,1830,1363,1748,2075,2963,2314,2328,2245,1607
+2023-02,London,1841,1371,1758,2087,2980,2324,2337,2258,1617
+2023-03,London,1850,1377,1765,2095,2994,2334,2351,2267,1624
+2023-04,London,1870,1392,1786,2118,3021,2359,2375,2291,1643
+2023-05,London,1896,1412,1812,2149,3065,2386,2404,2322,1667
+2023-06,London,1915,1426,1830,2171,3098,2409,2431,2345,1684
+2023-07,London,1930,1437,1845,2189,3124,2429,2447,2363,1697
+2023-08,London,1945,1450,1857,2205,3146,2447,2465,2382,1710
+2023-09,London,1957,1459,1868,2217,3162,2466,2481,2395,1721
+2023-10,London,1971,1469,1881,2232,3182,2484,2499,2411,1733
+2023-11,London,1982,1478,1893,2244,3190,2497,2512,2421,1743
+2023-12,London,1994,1489,1905,2258,3204,2513,2526,2435,1754
+2024-01,London,2009,1501,1918,2275,3229,2532,2546,2453,1768
+2024-02,London,2034,1521,1943,2303,3264,2569,2579,2484,1790
+2024-03,London,2056,1537,1964,2328,3295,2594,2609,2510,1809
+2024-04,London,2071,1550,1978,2344,3312,2610,2627,2527,1823
+2024-05,London,2088,1562,1994,2362,3339,2629,2647,2549,1837
+2024-06,London,2100,1573,2006,2375,3350,2642,2662,2560,1849
+2024-07,London,2116,1586,2021,2394,3368,2666,2685,2579,1864
+2024-08,London,2130,1599,2035,2408,3383,2684,2698,2594,1877
+2024-09,London,2147,1612,2051,2427,3403,2705,2718,2616,1892
+2024-10,London,2172,1630,2075,2454,3444,2734,2750,2646,1914
+2024-11,London,2209,1657,2109,2498,3509,2775,2800,2694,1946
+2024-12,London,2221,1667,2121,2512,3528,2786,2813,2708,1957
+2025-01,London,2229,1673,2129,2519,3536,2801,2824,2716,1964
+2025-02,London,2235,1678,2137,2527,3540,2804,2833,2722,1970
+2025-03,London,2243,1685,2143,2535,3546,2812,2841,2729,1977
+2025-04,London,2246,1688,2146,2538,3549,2814,2844,2734,1979
+2025-05,London,2249,1693,2152,2541,3545,2819,2841,2733,1984
+2025-06,London,2252,1698,2156,2545,3542,2823,2840,2735,1988
+2025-07,London,2250,1697,2153,2542,3534,2813,2836,2731,1987
+2025-08,London,2253,1698,2155,2544,3538,2818,2846,2737,1988
+2025-09,London,2260,1705,2162,2554,3553,2825,2849,2747,1996
+2025-10,London,2265,1708,2166,2560,3557,2831,2855,2754,1999
+2025-11,London,2271,1712,2172,2569,3577,2849,2866,2765,2003
+2025-12,London,2268,1710,2168,2566,3565,2846,2863,2761,2000
+2026-01,London,2253,1702,2156,2546,3533,2831,2843,2739,1987
+2026-02,London,2273,1717,2176,2570,3564,2853,2870,2765,2005
+2026-03,London,2280,1722,2183,2578,3566,2857,2876,2772,2012
+2026-04,London,2290,1730,2192,2590,3582,2870,2892,2786,2021
+2026-05,London,2294,1733,2196,2596,3586,2873,2897,2791,2024
+2026-06,London,2302,1740,2205,2607,3594,2884,2907,2799,2032
+2026-07,London,2317,1752,2218,2623,3614,2899,2924,2817,2045
+2026-08,London,2332,1760,2232,2643,3646,2920,2946,2840,2056
+2026-09,London,2338,1764,2239,2651,3655,2930,2960,2850,2061
+2015-01,South East,932,640,839,1006,1483,1316,1023,942,751
+2015-02,South East,932,641,839,1007,1482,1316,1023,941,751
+2015-03,South East,935,642,841,1009,1488,1320,1025,944,753
+2015-04,South East,938,644,844,1012,1491,1324,1029,946,756
+2015-05,South East,939,645,846,1014,1491,1326,1030,948,757
+2015-06,South East,942,646,848,1018,1493,1330,1033,950,759
+2015-07,South East,944,649,850,1021,1499,1335,1036,952,761
+2015-08,South East,947,650,853,1024,1506,1340,1040,955,764
+2015-09,South East,951,652,856,1028,1515,1346,1044,959,766
+2015-10,South East,953,653,858,1031,1516,1347,1047,961,768
+2015-11,South East,958,656,863,1036,1526,1355,1052,966,772
+2015-12,South East,961,658,865,1039,1529,1358,1056,969,774
+2016-01,South East,964,662,869,1043,1531,1362,1059,971,778
+2016-02,South East,968,665,873,1048,1535,1367,1063,975,781
+2016-03,South East,971,667,875,1052,1540,1373,1067,978,784
+2016-04,South East,977,670,880,1058,1550,1382,1073,983,788
+2016-05,South East,979,672,883,1061,1554,1386,1076,986,790
+2016-06,South East,983,674,886,1065,1564,1392,1081,991,793
+2016-07,South East,988,677,889,1069,1572,1398,1086,995,796
+2016-08,South East,992,680,893,1074,1581,1406,1090,999,799
+2016-09,South East,997,683,896,1079,1589,1411,1095,1004,803
+2016-10,South East,1000,685,899,1084,1596,1417,1100,1008,806
+2016-11,South East,1004,688,903,1089,1599,1422,1104,1012,809
+2016-12,South East,1007,690,905,1091,1605,1426,1107,1015,811
+2017-01,South East,1009,691,907,1093,1608,1428,1110,1016,812
+2017-02,South East,1011,693,909,1096,1611,1430,1112,1019,814
+2017-03,South East,1014,694,910,1098,1614,1433,1115,1022,816
+2017-04,South East,1017,697,913,1101,1620,1438,1118,1025,819
+2017-05,South East,1017,698,914,1102,1621,1439,1119,1025,819
+2017-06,South East,1018,699,915,1102,1620,1439,1120,1026,820
+2017-07,South East,1021,701,917,1105,1625,1443,1123,1028,822
+2017-08,South East,1022,703,918,1107,1626,1445,1125,1030,824
+2017-09,South East,1024,704,919,1108,1631,1448,1127,1032,825
+2017-10,South East,1024,704,920,1109,1627,1446,1127,1032,826
+2017-11,South East,1025,705,921,1110,1626,1446,1128,1032,827
+2017-12,South East,1026,706,921,1111,1630,1448,1129,1034,828
+2018-01,South East,1027,707,922,1111,1629,1450,1129,1033,829
+2018-02,South East,1028,708,923,1113,1632,1452,1132,1035,829
+2018-03,South East,1030,709,924,1114,1633,1452,1134,1037,831
+2018-04,South East,1030,710,924,1114,1633,1452,1134,1037,831
+2018-05,South East,1031,710,925,1115,1635,1454,1135,1038,831
+2018-06,South East,1031,710,926,1116,1636,1454,1136,1039,832
+2018-07,South East,1034,712,928,1119,1639,1458,1139,1041,834
+2018-08,South East,1035,711,929,1120,1643,1459,1140,1042,835
+2018-09,South East,1037,713,930,1122,1646,1461,1143,1045,836
+2018-10,South East,1038,714,930,1124,1652,1464,1144,1047,836
+2018-11,South East,1040,715,932,1125,1655,1466,1146,1048,838
+2018-12,South East,1043,716,935,1128,1662,1470,1150,1052,840
+2019-01,South East,1044,717,935,1129,1662,1469,1150,1054,840
+2019-02,South East,1045,719,936,1130,1664,1470,1152,1055,842
+2019-03,South East,1046,720,936,1130,1662,1468,1152,1056,842
+2019-04,South East,1047,721,937,1132,1661,1468,1153,1057,843
+2019-05,South East,1049,723,939,1133,1665,1471,1156,1059,845
+2019-06,South East,1050,725,940,1134,1665,1473,1157,1059,847
+2019-07,South East,1053,727,943,1138,1666,1477,1160,1062,849
+2019-08,South East,1056,729,945,1140,1672,1481,1163,1066,851
+2019-09,South East,1057,730,945,1141,1678,1483,1165,1068,852
+2019-10,South East,1058,731,946,1142,1678,1483,1165,1069,853
+2019-11,South East,1058,732,946,1142,1678,1484,1165,1069,853
+2019-12,South East,1059,733,947,1143,1678,1485,1167,1070,854
+2020-01,South East,1061,735,948,1145,1675,1486,1168,1072,856
+2020-02,South East,1062,735,949,1147,1676,1487,1169,1073,856
+2020-03,South East,1062,736,949,1147,1675,1486,1169,1073,856
+2020-04,South East,1063,737,950,1147,1675,1488,1170,1073,857
+2020-05,South East,1064,738,952,1150,1677,1490,1172,1075,859
+2020-06,South East,1065,739,953,1151,1678,1492,1173,1076,860
+2020-07,South East,1066,740,953,1151,1679,1492,1173,1077,860
+2020-08,South East,1063,738,951,1148,1677,1489,1170,1074,858
+2020-09,South East,1065,739,952,1150,1682,1490,1172,1077,859
+2020-10,South East,1067,741,954,1153,1685,1493,1174,1079,861
+2020-11,South East,1068,741,954,1154,1682,1494,1174,1079,861
+2020-12,South East,1070,742,956,1157,1685,1497,1177,1082,863
+2021-01,South East,1072,744,959,1160,1684,1500,1179,1083,865
+2021-02,South East,1073,744,960,1161,1690,1501,1180,1085,865
+2021-03,South East,1076,746,962,1164,1698,1506,1183,1088,867
+2021-04,South East,1076,745,961,1164,1700,1506,1183,1088,867
+2021-05,South East,1078,746,963,1167,1706,1511,1186,1091,868
+2021-06,South East,1081,748,966,1171,1712,1517,1190,1095,870
+2021-07,South East,1084,750,968,1175,1718,1522,1193,1098,872
+2021-08,South East,1088,752,971,1179,1727,1527,1197,1103,875
+2021-09,South East,1091,752,973,1182,1739,1533,1200,1106,876
+2021-10,South East,1097,755,978,1189,1753,1543,1208,1113,880
+2021-11,South East,1101,757,981,1194,1760,1548,1211,1117,883
+2021-12,South East,1105,759,984,1199,1771,1557,1217,1122,885
+2022-01,South East,1110,762,989,1206,1777,1565,1222,1126,888
+2022-02,South East,1114,764,992,1211,1786,1571,1227,1132,892
+2022-03,South East,1118,766,996,1215,1793,1578,1231,1136,895
+2022-04,South East,1124,770,1000,1221,1799,1586,1236,1141,899
+2022-05,South East,1126,772,1002,1223,1805,1590,1239,1143,901
+2022-06,South East,1132,776,1007,1229,1815,1599,1245,1149,905
+2022-07,South East,1137,780,1012,1235,1824,1608,1250,1155,910
+2022-08,South East,1142,783,1016,1240,1831,1612,1255,1160,913
+2022-09,South East,1146,786,1019,1244,1839,1616,1260,1165,917
+2022-10,South East,1151,789,1023,1250,1849,1624,1265,1170,920
+2022-11,South East,1157,793,1028,1257,1857,1633,1272,1177,925
+2022-12,South East,1163,797,1034,1264,1866,1643,1280,1182,930
+2023-01,South East,1169,801,1039,1270,1876,1652,1287,1188,934
+2023-02,South East,1177,806,1045,1277,1885,1661,1294,1196,940
+2023-03,South East,1183,810,1050,1283,1896,1670,1302,1202,945
+2023-04,South East,1190,814,1057,1291,1905,1680,1310,1209,951
+2023-05,South East,1196,819,1063,1298,1913,1687,1317,1214,957
+2023-06,South East,1204,824,1069,1306,1927,1698,1327,1222,963
+2023-07,South East,1214,831,1078,1317,1944,1713,1338,1231,971
+2023-08,South East,1221,837,1084,1325,1955,1723,1347,1239,977
+2023-09,South East,1229,842,1091,1333,1967,1734,1354,1246,983
+2023-10,South East,1236,847,1097,1340,1978,1744,1362,1253,989
+2023-11,South East,1245,854,1106,1350,1988,1756,1371,1262,997
+2023-12,South East,1254,861,1114,1360,1998,1768,1381,1271,1004
+2024-01,South East,1264,868,1122,1371,2014,1784,1393,1280,1012
+2024-02,South East,1272,874,1129,1380,2025,1794,1402,1289,1018
+2024-03,South East,1279,879,1136,1388,2033,1803,1410,1295,1024
+2024-04,South East,1285,884,1142,1394,2039,1811,1417,1301,1029
+2024-05,South East,1292,889,1148,1401,2050,1820,1424,1308,1035
+2024-06,South East,1301,897,1157,1411,2058,1832,1435,1317,1044
+2024-07,South East,1307,901,1162,1418,2064,1840,1442,1323,1048
+2024-08,South East,1314,907,1168,1425,2071,1847,1450,1330,1054
+2024-09,South East,1324,915,1177,1437,2084,1862,1461,1341,1062
+2024-10,South East,1335,922,1187,1449,2101,1877,1473,1351,1071
+2024-11,South East,1345,930,1196,1460,2118,1892,1484,1362,1079
+2024-12,South East,1351,934,1202,1466,2126,1898,1490,1368,1084
+2025-01,South East,1356,938,1207,1472,2134,1907,1496,1373,1089
+2025-02,South East,1362,943,1213,1479,2140,1913,1503,1379,1094
+2025-03,South East,1368,948,1218,1485,2147,1919,1509,1385,1099
+2025-04,South East,1373,952,1223,1490,2151,1923,1513,1390,1104
+2025-05,South East,1377,956,1228,1494,2154,1928,1518,1394,1108
+2025-06,South East,1384,962,1234,1501,2160,1935,1524,1401,1114
+2025-07,South East,1379,960,1230,1495,2147,1924,1517,1395,1112
+2025-08,South East,1384,963,1235,1501,2156,1930,1523,1402,1116
+2025-09,South East,1390,967,1239,1507,2165,1937,1529,1407,1120
+2025-10,South East,1393,969,1243,1512,2169,1942,1534,1412,1122
+2025-11,South East,1399,973,1248,1519,2184,1953,1541,1418,1126
+2025-12,South East,1402,976,1250,1523,2185,1956,1545,1422,1128
+2026-01,South East,1405,979,1254,1525,2188,1957,1548,1425,1130
+2026-02,South East,1409,981,1257,1529,2192,1962,1552,1429,1133
+2026-03,South East,1411,983,1260,1533,2192,1965,1555,1431,1135
+2026-04,South East,1414,985,1262,1537,2196,1969,1558,1434,1138
+2026-05,South East,1418,987,1266,1541,2200,1972,1563,1438,1141
+2026-06,South East,1415,986,1264,1539,2195,1970,1560,1435,1139
+2026-07,South East,1419,989,1267,1543,2199,1973,1564,1439,1142
+2026-08,South East,1426,993,1273,1552,2213,1986,1573,1446,1146
+2026-09,South East,1438,1000,1284,1566,2231,2003,1589,1459,1154
+2015-01,South West,778,513,674,808,1195,1017,842,791,614
+2015-02,South West,779,515,675,810,1196,1019,844,792,615
+2015-03,South West,781,515,677,812,1201,1022,845,794,616
+2015-04,South West,783,517,678,813,1202,1024,847,795,618
+2015-05,South West,785,518,680,816,1204,1027,850,797,619
+2015-06,South West,785,518,681,817,1203,1028,851,798,620
+2015-07,South West,787,519,682,819,1207,1031,852,799,621
+2015-08,South West,790,520,684,822,1214,1036,856,802,623
+2015-09,South West,792,521,685,823,1218,1038,857,804,624
+2015-10,South West,793,522,686,825,1219,1039,859,805,625
+2015-11,South West,796,523,689,828,1225,1044,862,809,627
+2015-12,South West,798,525,691,831,1228,1046,865,811,629
+2016-01,South West,799,527,692,832,1227,1046,865,811,631
+2016-02,South West,802,528,695,835,1230,1050,868,813,633
+2016-03,South West,805,531,697,839,1235,1055,872,817,635
+2016-04,South West,808,532,699,842,1240,1059,875,819,638
+2016-05,South West,811,534,702,844,1243,1063,878,822,640
+2016-06,South West,815,536,705,849,1253,1069,884,827,643
+2016-07,South West,818,537,707,851,1258,1072,887,830,645
+2016-08,South West,820,539,708,854,1264,1076,889,832,646
+2016-09,South West,822,540,710,856,1268,1078,891,834,648
+2016-10,South West,827,543,713,860,1276,1084,897,840,652
+2016-11,South West,831,546,717,865,1280,1089,901,844,655
+2016-12,South West,835,548,720,869,1288,1095,906,848,658
+2017-01,South West,836,549,721,870,1289,1096,907,849,659
+2017-02,South West,837,549,722,871,1291,1096,908,850,659
+2017-03,South West,839,550,723,873,1293,1099,910,852,660
+2017-04,South West,840,551,723,873,1295,1100,911,853,662
+2017-05,South West,841,553,725,875,1297,1102,913,854,663
+2017-06,South West,843,555,727,877,1299,1105,915,856,665
+2017-07,South West,846,556,729,880,1304,1108,918,859,667
+2017-08,South West,849,559,731,883,1307,1112,921,861,669
+2017-09,South West,851,560,732,884,1311,1115,923,863,670
+2017-10,South West,852,562,734,886,1311,1116,925,865,672
+2017-11,South West,854,563,735,888,1312,1118,928,866,674
+2017-12,South West,857,564,737,890,1317,1121,930,869,676
+2018-01,South West,857,564,738,890,1316,1122,930,869,676
+2018-02,South West,858,565,738,892,1319,1124,932,870,677
+2018-03,South West,858,566,739,892,1318,1123,932,870,677
+2018-04,South West,860,567,740,893,1320,1125,934,871,678
+2018-05,South West,861,567,740,893,1322,1126,935,873,679
+2018-06,South West,862,568,742,896,1324,1127,937,874,680
+2018-07,South West,863,568,742,896,1325,1129,938,875,681
+2018-08,South West,865,569,744,899,1330,1132,941,878,682
+2018-09,South West,866,570,744,899,1331,1132,942,879,682
+2018-10,South West,868,572,746,902,1338,1136,944,881,684
+2018-11,South West,870,572,747,903,1340,1137,946,883,685
+2018-12,South West,872,573,749,905,1346,1140,948,885,686
+2019-01,South West,872,573,749,905,1345,1139,949,886,686
+2019-02,South West,874,575,750,907,1348,1140,950,888,687
+2019-03,South West,875,576,751,907,1347,1140,951,889,689
+2019-04,South West,876,577,752,909,1347,1141,953,891,690
+2019-05,South West,879,580,754,911,1352,1144,956,894,692
+2019-06,South West,879,581,755,911,1351,1145,956,893,693
+2019-07,South West,880,582,756,913,1350,1146,957,895,694
+2019-08,South West,881,583,756,913,1352,1147,958,896,695
+2019-09,South West,884,585,758,915,1359,1150,961,899,697
+2019-10,South West,885,586,759,916,1361,1151,962,900,697
+2019-11,South West,888,587,761,918,1364,1154,964,903,700
+2019-12,South West,889,589,762,920,1364,1156,966,905,701
+2020-01,South West,892,591,764,922,1364,1158,969,907,703
+2020-02,South West,893,592,765,924,1366,1160,970,908,704
+2020-03,South West,894,593,766,926,1367,1161,972,910,705
+2020-04,South West,894,593,767,926,1366,1162,972,909,705
+2020-05,South West,896,595,768,928,1368,1163,973,911,707
+2020-06,South West,897,596,769,929,1370,1166,975,913,708
+2020-07,South West,899,597,771,931,1372,1167,976,914,709
+2020-08,South West,902,599,773,934,1379,1172,979,918,711
+2020-09,South West,904,600,775,936,1384,1174,982,921,713
+2020-10,South West,908,603,778,940,1390,1179,986,925,716
+2020-11,South West,911,605,781,944,1392,1184,989,928,718
+2020-12,South West,914,606,783,947,1395,1187,993,931,721
+2021-01,South West,913,606,783,947,1389,1185,992,928,720
+2021-02,South West,918,609,788,953,1402,1191,997,935,724
+2021-03,South West,924,613,792,959,1413,1199,1004,941,728
+2021-04,South West,927,614,794,962,1419,1203,1007,944,730
+2021-05,South West,929,615,796,964,1424,1207,1009,947,731
+2021-06,South West,932,617,798,968,1429,1211,1012,950,733
+2021-07,South West,936,619,801,973,1437,1218,1017,955,736
+2021-08,South West,941,622,805,977,1446,1223,1022,960,739
+2021-09,South West,945,623,808,981,1459,1229,1026,966,742
+2021-10,South West,950,625,811,986,1468,1235,1031,971,744
+2021-11,South West,953,626,813,989,1474,1238,1035,974,746
+2021-12,South West,959,630,818,997,1487,1248,1042,981,751
+2022-01,South West,964,633,822,1002,1493,1254,1047,986,754
+2022-02,South West,969,635,826,1007,1503,1260,1053,992,757
+2022-03,South West,972,637,829,1011,1508,1266,1056,995,760
+2022-04,South West,975,639,831,1014,1508,1269,1058,998,762
+2022-05,South West,982,643,836,1020,1522,1277,1066,1005,767
+2022-06,South West,985,645,839,1024,1527,1282,1069,1008,770
+2022-07,South West,988,648,842,1027,1533,1288,1072,1012,772
+2022-08,South West,995,652,848,1034,1544,1296,1081,1020,778
+2022-09,South West,1002,657,853,1041,1556,1304,1088,1027,783
+2022-10,South West,1007,659,856,1045,1564,1310,1092,1032,786
+2022-11,South West,1010,661,859,1049,1568,1315,1096,1036,788
+2022-12,South West,1016,665,864,1055,1576,1324,1103,1041,793
+2023-01,South West,1024,669,870,1063,1588,1334,1112,1049,799
+2023-02,South West,1029,673,875,1068,1595,1341,1118,1055,803
+2023-03,South West,1036,677,879,1074,1605,1349,1125,1061,808
+2023-04,South West,1039,679,883,1077,1608,1353,1129,1064,811
+2023-05,South West,1045,684,888,1084,1616,1360,1136,1069,816
+2023-06,South West,1052,688,894,1091,1628,1370,1145,1076,822
+2023-07,South West,1057,691,898,1097,1636,1378,1150,1081,826
+2023-08,South West,1065,697,905,1105,1648,1388,1159,1089,832
+2023-09,South West,1072,702,911,1112,1660,1398,1167,1096,837
+2023-10,South West,1079,707,917,1119,1670,1408,1175,1103,843
+2023-11,South West,1083,709,920,1123,1671,1412,1178,1106,847
+2023-12,South West,1088,713,925,1129,1677,1418,1183,1111,851
+2024-01,South West,1095,719,930,1136,1689,1428,1192,1118,857
+2024-02,South West,1102,723,936,1143,1697,1436,1200,1126,861
+2024-03,South West,1108,727,942,1150,1704,1445,1207,1131,867
+2024-04,South West,1114,732,947,1156,1710,1452,1214,1137,872
+2024-05,South West,1120,736,952,1162,1719,1459,1219,1143,876
+2024-06,South West,1127,742,958,1169,1724,1467,1227,1149,882
+2024-07,South West,1133,746,963,1175,1729,1474,1234,1155,887
+2024-08,South West,1133,748,965,1176,1728,1475,1234,1156,888
+2024-09,South West,1140,753,970,1184,1734,1484,1241,1163,893
+2024-10,South West,1146,757,976,1190,1745,1492,1248,1169,898
+2024-11,South West,1153,762,981,1198,1756,1501,1255,1176,903
+2024-12,South West,1161,769,990,1207,1768,1511,1264,1185,911
+2025-01,South West,1167,773,995,1213,1777,1519,1270,1190,915
+2025-02,South West,1167,773,996,1213,1775,1517,1270,1190,916
+2025-03,South West,1168,775,997,1214,1775,1518,1271,1192,917
+2025-04,South West,1171,778,1000,1217,1778,1520,1274,1195,921
+2025-05,South West,1175,781,1004,1221,1780,1523,1278,1199,924
+2025-06,South West,1181,786,1010,1228,1786,1530,1283,1205,930
+2025-07,South West,1184,789,1012,1230,1787,1531,1285,1207,933
+2025-08,South West,1192,794,1019,1238,1801,1540,1295,1217,940
+2025-09,South West,1200,800,1026,1247,1814,1551,1304,1225,946
+2025-10,South West,1214,809,1037,1261,1833,1567,1319,1240,956
+2025-11,South West,1220,812,1042,1268,1847,1575,1326,1247,960
+2025-12,South West,1221,813,1043,1270,1846,1576,1327,1249,960
+2026-01,South West,1224,816,1046,1272,1850,1578,1330,1252,963
+2026-02,South West,1227,818,1049,1275,1853,1582,1334,1254,965
+2026-03,South West,1227,818,1050,1276,1850,1582,1335,1255,965
+2026-04,South West,1231,821,1053,1281,1855,1586,1339,1259,968
+2026-05,South West,1234,823,1056,1285,1857,1590,1343,1263,971
+2026-06,South West,1237,825,1058,1288,1860,1594,1346,1264,973
+2026-07,South West,1236,825,1058,1288,1858,1593,1346,1264,973
+2026-08,South West,1245,830,1065,1297,1872,1605,1356,1272,978
+2026-09,South West,1251,833,1070,1305,1881,1613,1365,1279,982
+</script>
+<script type="text/csv" id="csv-sp500">month,sp500_usd,div_yield_pct,gbpusd,sp500_gbp,tr_index_usd,tr_index_gbp
+2014-12,2054.27,1.92,1.564,1313.47,100.0,100.0
+2015-01,2028.18,1.97,1.5143,1339.35,98.894,102.14
+2015-02,2082.2,1.94,1.5334,1357.9,101.688,103.717
+2015-03,2079.99,1.96,1.4957,1390.65,101.746,106.392
+2015-04,2094.86,1.96,1.4967,1399.65,102.64,107.255
+2015-05,2111.94,1.96,1.547,1365.18,103.644,104.783
+2015-06,2099.29,1.99,1.5568,1348.46,103.195,103.673
+2015-07,2094.14,2.01,1.556,1345.85,103.115,103.645
+2015-08,2039.87,2.07,1.5583,1309.04,100.621,100.989
+2015-09,1944.41,2.19,1.5326,1268.7,96.096,98.064
+2015-10,2024.81,2.11,1.5339,1320.04,100.238,102.205
+2015-11,2080.62,2.07,1.519,1369.73,103.174,106.23
+2015-12,2054.08,2.11,1.4983,1370.94,102.039,106.513
+2016-01,1918.6,2.27,1.4379,1334.31,95.502,103.877
+2016-02,1904.42,2.3,1.4296,1332.13,94.979,103.908
+2016-03,2021.95,2.17,1.425,1418.91,101.013,110.866
+2016-04,2075.54,2.12,1.4312,1450.21,103.868,113.506
+2016-05,2065.55,2.14,1.4518,1422.75,103.554,111.556
+2016-06,2083.89,2.13,1.4209,1466.6,104.657,115.197
+2016-07,2148.9,2.08,1.3141,1635.26,108.103,128.661
+2016-08,2170.95,2.07,1.31,1657.21,109.399,130.611
+2016-09,2157.69,2.09,1.3142,1641.83,108.921,129.625
+2016-10,2143.02,2.11,1.2329,1738.19,108.372,137.476
+2016-11,2164.99,2.1,1.2431,1741.61,109.673,137.984
+2016-12,2246.63,2.03,1.2488,1799.03,113.994,142.766
+2017-01,2275.12,2.02,1.2351,1842.05,115.631,146.423
+2017-02,2329.91,1.98,1.249,1865.42,118.607,148.52
+2017-03,2366.82,1.96,1.2348,1916.76,120.68,152.853
+2017-04,2359.31,1.98,1.2652,1864.77,120.496,148.953
+2017-05,2395.35,1.96,1.2933,1852.12,122.533,148.181
+2017-06,2433.99,1.94,1.2813,1899.63,124.708,152.223
+2017-07,2454.1,1.94,1.2994,1888.64,125.94,151.585
+2017-08,2456.22,1.95,1.2955,1895.96,126.253,152.42
+2017-09,2492.84,1.93,1.3324,1870.94,128.339,150.647
+2017-10,2557.0,1.89,1.3197,1937.56,131.844,156.251
+2017-11,2593.61,1.88,1.3219,1962.03,133.938,158.469
+2017-12,2664.34,1.84,1.3402,1988.02,137.796,160.807
+2018-01,2789.8,1.77,1.3832,2016.92,144.488,163.374
+2018-02,2705.16,1.84,1.3961,1937.65,140.326,157.202
+2018-03,2702.77,1.85,1.397,1934.7,140.418,157.204
+2018-04,2653.63,1.9,1.4083,1884.28,138.088,153.355
+2018-05,2701.49,1.88,1.3459,2007.2,140.795,163.61
+2018-06,2754.35,1.85,1.3288,2072.81,143.767,169.214
+2018-07,2793.64,1.84,1.3169,2121.38,146.038,173.44
+2018-08,2857.82,1.82,1.288,2218.8,149.614,181.675
+2018-09,2901.5,1.8,1.3062,2221.33,152.126,182.15
+2018-10,2785.46,1.9,1.3012,2140.69,146.282,175.827
+2018-11,2723.23,1.96,1.2901,2110.87,143.253,173.667
+2018-12,2567.31,2.09,1.2661,2027.73,135.301,167.136
+2019-01,2607.39,2.08,1.2901,2021.08,137.648,166.871
+2019-02,2754.86,1.98,1.3017,2116.36,145.66,175.011
+2019-03,2803.98,1.96,1.3165,2129.87,148.495,176.412
+2019-04,2903.8,1.9,1.3036,2227.52,154.016,184.782
+2019-05,2854.71,1.95,1.2841,2223.12,151.663,184.721
+2019-06,2890.17,1.94,1.2679,2279.49,153.792,189.708
+2019-07,2996.11,1.88,1.2469,2402.85,159.67,200.276
+2019-08,2897.5,1.96,1.2155,2383.79,154.676,199.023
+2019-09,2982.16,1.92,1.2354,2413.92,159.442,201.852
+2019-10,2977.68,1.93,1.2647,2354.46,159.46,197.197
+2019-11,3104.9,1.86,1.2883,2410.08,166.52,202.155
+2019-12,3176.75,1.83,1.3101,2424.81,170.627,203.695
+2020-01,3278.2,1.79,1.3071,2508.0,176.331,210.987
+2020-02,3277.31,1.8,1.2957,2529.38,176.547,213.105
+2020-03,2652.39,2.25,1.2364,2145.26,143.214,181.161
+2020-04,2761.98,2.16,1.241,2225.6,149.389,188.271
+2020-05,2919.61,2.04,1.23,2373.67,158.169,201.119
+2020-06,3104.66,1.92,1.2526,2478.57,168.447,210.323
+2020-07,3207.62,1.85,1.2691,2527.48,174.293,214.793
+2020-08,3391.71,1.74,1.3126,2583.96,184.548,219.895
+2020-09,3365.52,1.75,1.2956,2597.65,183.392,221.384
+2020-10,3418.7,1.72,1.2985,2632.81,186.553,224.697
+2020-11,3548.99,1.65,1.3207,2687.21,193.92,229.643
+2020-12,3695.31,1.58,1.3432,2751.12,202.17,235.403
+2021-01,3793.75,1.53,1.3633,2782.77,207.813,238.407
+2021-02,3883.43,1.49,1.387,2799.88,212.984,240.163
+2021-03,3910.51,1.47,1.3859,2821.64,214.73,242.324
+2021-04,4141.18,1.39,1.3842,2991.75,227.645,257.214
+2021-05,4167.85,1.39,1.4091,2957.81,229.374,254.589
+2021-06,4238.49,1.37,1.4027,3021.67,233.524,260.378
+2021-07,4363.71,1.34,1.3807,3160.51,240.684,272.637
+2021-08,4454.21,1.32,1.3799,3227.92,245.94,278.752
+2021-09,4445.54,1.33,1.3733,3237.12,245.734,279.858
+2021-10,4460.71,1.34,1.3696,3256.94,246.847,281.884
+2021-11,4667.39,1.29,1.3448,3470.69,258.55,300.693
+2021-12,4674.77,1.29,1.3301,3514.6,259.237,304.824
+2022-01,4573.82,1.33,1.3561,3372.77,253.925,292.854
+2022-02,4435.98,1.39,1.3538,3276.69,246.567,284.851
+2022-03,4391.27,1.41,1.3173,3333.53,244.372,290.137
+2022-04,4391.3,1.43,1.2917,3399.63,244.665,296.242
+2022-05,4040.36,1.57,1.2443,3247.09,225.432,283.353
+2022-06,3898.95,1.64,1.229,3172.45,217.85,277.231
+2022-07,3911.73,1.65,1.1989,3262.77,218.864,285.514
+2022-08,4158.56,1.56,1.1999,3465.76,232.959,303.648
+2022-09,3850.52,1.7,1.1326,3399.72,216.032,298.318
+2022-10,3726.05,1.77,1.1307,3295.35,209.368,289.6
+2022-11,3917.49,1.69,1.1744,3335.74,220.42,293.542
+2022-12,3912.38,1.71,1.2184,3211.08,220.446,282.976
+2023-01,3960.66,1.7,1.2233,3237.68,223.479,285.72
+2023-02,4079.68,1.66,1.2086,3375.55,230.504,298.286
+2023-03,3968.56,1.72,1.2135,3270.34,224.556,289.415
+2023-04,4121.47,1.66,1.2452,3309.88,233.518,293.305
+2023-05,4146.17,1.65,1.2473,3324.12,235.239,294.969
+2023-06,4345.37,1.58,1.2631,3440.24,246.851,305.657
+2023-07,4508.08,1.53,1.2881,3499.79,256.409,311.329
+2023-08,4457.36,1.56,1.2707,3507.8,253.857,312.452
+2023-09,4515.77,1.57,1.2389,3644.98,257.516,325.091
+2023-10,4269.4,1.64,1.2168,3508.71,243.818,313.389
+2023-11,4460.06,1.57,1.243,3588.14,255.026,320.885
+2023-12,4685.05,1.5,1.2653,3702.72,268.209,331.526
+2024-01,4804.49,1.47,1.2701,3782.77,275.376,339.097
+2024-02,5011.96,1.41,1.2622,3970.81,287.591,356.355
+2024-03,5170.57,1.37,1.2716,4066.19,297.02,365.319
+2024-04,5112.49,1.4,1.2512,4086.07,294.03,367.538
+2024-05,5235.23,1.37,1.2634,4143.76,301.425,373.143
+2024-06,5415.14,1.33,1.271,4260.54,312.118,384.069
+2024-07,5538.0,1.31,1.2863,4305.37,319.54,388.525
+2024-08,5478.21,1.33,1.2933,4235.84,316.444,382.679
+2024-09,5621.26,1.3,1.3217,4253.05,325.05,384.64
+2024-10,5792.32,1.28,1.3045,4440.26,335.288,401.986
+2024-11,5929.92,1.25,1.275,4650.92,343.603,421.486
+2024-12,6010.91,1.24,1.2647,4752.83,348.651,431.161
+2025-01,5979.52,1.26,1.2348,4842.5,347.196,439.759
+2025-02,6038.69,1.25,1.2545,4813.62,350.993,437.587
+2025-03,5683.98,1.34,1.2911,4402.43,330.768,400.682
+2025-04,5369.5,1.43,1.3131,4089.18,312.862,372.641
+2025-05,5810.92,1.32,1.3366,4347.54,338.926,396.588
+2025-06,6029.95,1.28,1.3566,4444.9,352.062,405.886
+2025-07,6296.5,1.23,1.3492,4666.84,367.986,426.571
+2025-08,6408.95,1.22,1.345,4765.02,374.932,435.98
+2025-09,6584.02,1.19,1.3505,4875.25,385.545,446.496
+2025-10,6735.69,1.17,1.3351,5045.08,394.803,462.491
+2025-11,6740.89,1.17,1.3143,5128.88,395.493,470.631
+2025-12,6853.03,1.15,1.3384,5120.32,402.451,470.288
+2026-01,6929.12,1.15,1.3527,5122.44,407.305,470.929
+2026-02,6919.47,1.16,1.3576,5096.84,407.132,469.029
+2026-03,6654.42,1.21,1.3334,4990.57,391.947,459.731
+2026-04,6957.01,1.16,1.3477,5162.14,410.148,475.975
+2026-05,7412.55,1.1,1.3495,5492.81,437.381,506.901
+2026-06,7450.03,1.1,1.3333,5587.66,439.993,516.125
+2026-07,7481.34,1.09,1.3379,5591.85,442.242,516.979
+2026-08,7711.32,1.06,1.3544,5693.53,456.227,526.831
+2026-09,7669.41,1.07,1.3415,5717.04,454.154,529.48
+</script>
+<script>// Buy-to-let vs S&P 500 model. Pure functions; no DOM.
+(function (root) {
+  const ok = (v) => v != null && isFinite(v);
+  const addM = (m, k) => { const y = +m.slice(0, 4), mo = +m.slice(5, 7) - 1 + k; const yy = y + Math.floor(mo / 12), mm = ((mo % 12) + 12) % 12; return yy + '-' + String(mm + 1).padStart(2, '0'); };
+  const mdiff = (a, b) => (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7));
+
+  // SDLT (England & Northern Ireland) on a residential purchase that is an additional dwelling.
+  // Month-level approximation of the effective dates (see notes in the dashboard).
+  const STD125 = [[125000, 0], [250000, 0.02], [925000, 0.05], [1500000, 0.10], [Infinity, 0.12]];
+  const BAND250 = [[250000, 0], [925000, 0.05], [1500000, 0.10], [Infinity, 0.12]];
+  const BAND500 = [[500000, 0], [925000, 0.05], [1500000, 0.10], [Infinity, 0.12]];
+  function sdltRegime(m) {
+    if (m < '2016-04') return { bands: STD125, sur: 0, label: 'Standard rates, no additional-property surcharge (before 1 Apr 2016)' };
+    if (m < '2020-07') return { bands: STD125, sur: 0.03, label: 'Standard rates + 3% surcharge' };
+    if (m < '2021-07') return { bands: BAND500, sur: 0.03, label: 'Stamp duty holiday (£500k nil band) + 3% surcharge' };
+    if (m < '2021-10') return { bands: BAND250, sur: 0.03, label: 'Holiday taper (£250k nil band) + 3% surcharge' };
+    if (m < '2022-10') return { bands: STD125, sur: 0.03, label: 'Standard rates + 3% surcharge' };
+    if (m < '2024-11') return { bands: BAND250, sur: 0.03, label: '£250k nil band (from 23 Sep 2022) + 3% surcharge' };
+    if (m < '2025-04') return { bands: BAND250, sur: 0.05, label: '£250k nil band + 5% surcharge (from 31 Oct 2024)' };
+    return { bands: STD125, sur: 0.05, label: 'Standard rates (from 1 Apr 2025) + 5% surcharge' };
+  }
+  function sdlt(price, m) {
+    const r = sdltRegime(m); let tax = 0, lo = 0;
+    for (const [hi, rate] of r.bands) { if (price > lo) tax += (Math.min(price, hi) - lo) * rate; lo = hi; }
+    if (price >= 40000) tax += price * r.sur;
+    return { tax, regime: r.label, surcharge: r.sur };
+  }
+
+  // IRR on monthly cash flows (bisection on monthly rate), returned annualised.
+  function irrAnnual(cfs) {
+    const npv = (r) => cfs.reduce((s, c, i) => s + c / Math.pow(1 + r, i), 0);
+    let lo = -0.99, hi = 1.0; const flo = npv(lo), fhi = npv(hi);
+    if (!isFinite(flo) || !isFinite(fhi) || flo * fhi > 0) return null;
+    for (let k = 0; k < 200; k++) { const mid = (lo + hi) / 2, f = npv(mid); if (Math.sign(f) === Math.sign(flo)) lo = mid; else hi = mid; }
+    return Math.pow(1 + (lo + hi) / 2, 12) - 1;
+  }
+
+  /*
+   inp: {buy, sell, price(m), rent(m), rate(m) [% p.a. BoE 2y fix], cpi(m), sp(m) -> {tr, px}}
+   a (assumptions): {ltv, spread, buyFees, mortFee, sellPct, sellFee, voidPct, mgmtPct, maintPct, fixedCosts, fundFee}
+  */
+  function run(inp, a) {
+    const { buy, sell } = inp; const n = mdiff(buy, sell); if (n < 1) return null;
+    const P0 = inp.price(buy), Pn = inp.price(sell); if (!ok(P0) || !ok(Pn)) return null;
+    const tax = sdlt(P0, buy).tax;
+    const loan = P0 * a.ltv;
+    const upfront = P0 - loan + tax + a.buyFees + (a.ltv > 0 ? a.mortFee : 0);
+    const cpiBase = inp.cpi(sell);
+    let lastRent = null, rentEst = 0;
+    const cf = [-upfront];
+    const series = [{ m: buy, btl: upfront, sp: upfront, spPx: upfront }];
+    const tot = { rent: 0, voids: 0, mgmt: 0, maint: 0, fixed: 0, interest: 0 };
+    let cumCash = 0; const months = [];
+    const spTR0 = inp.sp(buy).tr, spPx0 = inp.sp(buy).px;
+    for (let i = 1; i <= n; i++) {
+      const m = addM(buy, i);
+      let R = inp.rent(m); if (!ok(R)) { R = lastRent; rentEst++; } else lastRent = R;
+      if (!ok(R)) return null;
+      const Pm = inp.price(m);
+      const gross = R, voids = R * a.voidPct, mgmt = (R - voids) * a.mgmtPct;
+      const maint = (ok(Pm) ? Pm : P0) * a.maintPct / 12;
+      const cpiM = inp.cpi(m), fixed = ok(cpiM) && ok(cpiBase) ? a.fixedCosts / 12 * cpiM / cpiBase : a.fixedCosts / 12;
+      const rr = inp.rate(m); const interest = loan > 0 ? loan * ((ok(rr) ? rr : 0) + a.spread) / 100 / 12 : 0;
+      const net = gross - voids - mgmt - maint - fixed - interest;
+      tot.rent += gross; tot.voids += voids; tot.mgmt += mgmt; tot.maint += maint; tot.fixed += fixed; tot.interest += interest;
+      cumCash += net;
+      months.push({ m, gross, voids, mgmt, maint, fixed, interest, net, P: ok(Pm) ? Pm : P0 });
+      let c = net;
+      const saleNet = (ok(Pm) ? Pm : P0) * (1 - a.sellPct) - a.sellFee - loan;
+      if (i === n) c += Pn * (1 - a.sellPct) - a.sellFee - loan;
+      cf.push(c);
+      const sp = inp.sp(m);
+      series.push({ m, btl: saleNet + cumCash, sp: ok(sp.tr) ? upfront * sp.tr / spTR0 * Math.pow(1 - a.fundFee, i / 12) : null, spPx: ok(sp.px) ? upfront * sp.px / spPx0 : null });
+    }
+    const saleProceeds = Pn * (1 - a.sellPct) - a.sellFee;
+    const endValue = saleProceeds - loan + cumCash;
+    const irr = irrAnnual(cf);
+    const spEnd = series[series.length - 1].sp;
+    const spIrr = ok(spEnd) ? Math.pow(spEnd / upfront, 12 / n) - 1 : null;
+    // S&P 500 with dividends taken as cash (income mode): fixed units, monthly dividend paid out.
+    let spIncome = null;
+    { const s0 = inp.sp(buy); if (ok(s0.px)) {
+        let units = upfront / s0.px; const icf = [-upfront]; const divs = []; let ok2 = true;
+        for (let i = 1; i <= n; i++) { const m = addM(buy, i); const s = inp.sp(m); if (!ok(s.px) || !ok(s.y)) { ok2 = false; break; }
+          units *= Math.pow(1 - a.fundFee, 1 / 12);
+          const d = units * s.px * s.y / 12; divs.push({ m, d }); icf.push(d + (i === n ? units * s.px : 0)); }
+        if (ok2) spIncome = { irr: irrAnnual(icf), divs, endCapital: units * inp.sp(sell).px, totalDivs: divs.reduce((x, y) => x + y.d, 0) };
+    } }
+    const rent0 = inp.rent(buy);
+    const grossYield = ok(rent0) ? rent0 * 12 / P0 : null;
+    const netYield = ok(rent0) ? (rent0 * 12 * (1 - a.voidPct) * (1 - a.mgmtPct) - P0 * a.maintPct - a.fixedCosts * (ok(inp.cpi(buy)) && ok(cpiBase) ? inp.cpi(buy) / cpiBase : 1)) / P0 : null;
+    return {
+      n, P0, Pn, tax, loan, upfront, irr, spIrr, endValue, spEnd, grossYield, netYield, rentEst,
+      profit: endValue - upfront, spProfit: ok(spEnd) ? spEnd - upfront : null,
+      tot, cumCash, saleCosts: Pn * a.sellPct + a.sellFee, capitalGain: Pn - P0,
+      buyFees: a.buyFees + (a.ltv > 0 ? a.mortFee : 0), series, regime: sdlt(P0, buy).regime, months, spIncome, cf, a, buy, sell,
+    };
+  }
+
+  // Monthly total-return index for unlevered property (price + net rent yield), used for volatility.
+  function volStats(values) {
+    // values: [{m, v}] monthly index levels; returns stats on rolling 12-month returns and annualised monthly vol
+    const r = []; for (let i = 1; i < values.length; i++) r.push(values[i].v / values[i - 1].v - 1);
+    const mean = r.reduce((s, x) => s + x, 0) / (r.length || 1);
+    const sd = Math.sqrt(r.reduce((s, x) => s + (x - mean) * (x - mean), 0) / Math.max(1, r.length - 1));
+    const y12 = []; for (let i = 12; i < values.length; i++) y12.push(values[i].v / values[i - 12].v - 1);
+    let peak = values[0] ? values[0].v : 0, mdd = 0; for (const p of values) { peak = Math.max(peak, p.v); mdd = Math.min(mdd, p.v / peak - 1); }
+    return { volAnnual: sd * Math.sqrt(12), worst12: y12.length ? Math.min(...y12) : null, maxDrawdown: mdd };
+  }
+
+
+  // ---------- UK tax (individual investor) ----------
+  const tyStart = (m) => { const y = +m.slice(0, 4), mo = +m.slice(5, 7); return mo >= 4 ? y : y - 1; }; // tax year starting 6 April (month-level)
+  const tyLabel = (y) => y + '/' + String((y + 1) % 100).padStart(2, '0');
+  const AEA = (ty) => ty <= 2016 ? 11100 : ty === 2017 ? 11300 : ty === 2018 ? 11700 : ty === 2019 ? 12000 : ty <= 2022 ? 12300 : ty === 2023 ? 6000 : 3000;
+  const INCOME_RATE = { basic: 0.20, higher: 0.40, additional: 0.45 };
+  const financeDeductible = (ty) => ty <= 2016 ? 1 : ty === 2017 ? 0.75 : ty === 2018 ? 0.5 : ty === 2019 ? 0.25 : 0;
+  const divRate = (ty, band) => ty <= 2015 ? { basic: 0, higher: 0.25, additional: 0.3056 }[band] : ty <= 2021 ? { basic: 0.075, higher: 0.325, additional: 0.381 }[band] : { basic: 0.0875, higher: 0.3375, additional: 0.3935 }[band];
+  const divAllowance = (ty) => ty <= 2015 ? 0 : ty <= 2017 ? 5000 : ty <= 2022 ? 2000 : ty === 2023 ? 1000 : 500;
+  const cgtResi = (m, band) => band === 'basic' ? 0.18 : (m < '2024-04' ? 0.28 : 0.24);
+  const cgtEquity = (m, band) => m < '2024-11' ? (band === 'basic' ? 0.10 : 0.20) : (band === 'basic' ? 0.18 : 0.24);
+
+  function taxView(res, inp, band, wrapper) {
+    if (!res) return null;
+    const a = res.a; const rate = INCOME_RATE[band];
+    // ---- buy-to-let income tax by tax year (Section 24 phased in 2017/18–2020/21)
+    const years = new Map();
+    for (const x of res.months) { const ty = tyStart(x.m); const o = years.get(ty) || { ty, profit: 0, finance: 0, gross: 0, net: 0, last: x.m }; o.profit += x.gross - x.voids - x.mgmt - x.maint - x.fixed; o.finance += x.interest; o.gross += x.gross; o.net += x.net; o.last = x.m; years.set(ty, o); }
+    if (a.ltv > 0) { const f = years.get(tyStart(addM(res.buy, 1))); if (f) f.finance += a.mortFee; }
+    let lossCF = 0; const btlYears = [];
+    for (const o of [...years.values()].sort((p, q) => p.ty - q.ty)) {
+      const share = financeDeductible(o.ty);
+      let taxable = o.profit - o.finance * share + lossCF; let t = 0;
+      if (taxable < 0) { lossCF = taxable; taxable = 0; } else { lossCF = 0; t = taxable * rate; }
+      const credit = 0.2 * o.finance * (1 - share); t = Math.max(0, t - credit);
+      btlYears.push(Object.assign(o, { taxable, tax: t, label: tyLabel(o.ty), share }));
+    }
+    const cfTax = res.cf.slice();
+    const idx = (m) => mdiff(res.buy, m);
+    for (const y of btlYears) cfTax[idx(y.last)] -= y.tax;
+    const baseCost = res.P0 + res.tax + a.buyFees;
+    const gain = res.Pn - res.saleCosts - baseCost;
+    const tySale = tyStart(res.sell);
+    const btlCgt = Math.max(0, gain - AEA(tySale)) * cgtResi(res.sell, band);
+    cfTax[res.n] -= btlCgt;
+    const btlIncomeTax = btlYears.reduce((s, y) => s + y.tax, 0);
+    const btlIrrAfter = irrAnnual(cfTax);
+    const btlEndAfter = res.endValue - btlIncomeTax - btlCgt;
+
+    // ---- S&P 500: ISA (no tax) or general account (dividend tax yearly, CGT on sale); dividends reinvested
+    const s0 = inp.sp(res.buy); if (!ok(s0.px)) return null;
+    let units = res.upfront / s0.px, costBase = res.upfront, tyDiv = 0, curTy = tyStart(addM(res.buy, 1)), divTaxTot = 0; const spYears = [];
+    const closeYear = (m, px) => { const t = wrapper === 'gia' ? Math.max(0, tyDiv - divAllowance(curTy)) * divRate(curTy, band) : 0; if (t > 0) { units -= t / px; costBase -= t; } divTaxTot += t; spYears.push({ ty: curTy, label: tyLabel(curTy), divs: tyDiv, tax: t, value: units * px }); tyDiv = 0; };
+    for (let i = 1; i <= res.n; i++) {
+      const m = addM(res.buy, i); const s = inp.sp(m); if (!ok(s.px) || !ok(s.y)) return null;
+      const ty = tyStart(m); if (ty !== curTy) { closeYear(addM(m, -1), inp.sp(addM(m, -1)).px); curTy = ty; }
+      units *= Math.pow(1 - a.fundFee, 1 / 12);
+      const d = units * s.px * s.y / 12; tyDiv += d; units += d / s.px; costBase += d;
+    }
+    const pxEnd = inp.sp(res.sell).px; closeYear(res.sell, pxEnd);
+    const spValue = units * pxEnd;
+    const spGain = spValue - costBase;
+    const spCgt = wrapper === 'gia' ? Math.max(0, spGain - AEA(tySale)) * cgtEquity(res.sell, band) : 0;
+    const spEndAfter = spValue - spCgt;
+    const spIrrAfter = Math.pow(spEndAfter / res.upfront, 12 / res.n) - 1;
+    return { band, wrapper, btlYears, btlIncomeTax, btlCgt, btlGain: gain, btlIrrAfter, btlEndAfter, spYears, spDivTax: divTaxTot, spCgt, spGain, spValue, spEndAfter, spIrrAfter,
+      rates: { income: rate, cgtResi: cgtResi(res.sell, band), cgtEquity: cgtEquity(res.sell, band), aea: AEA(tySale) } };
+  }
+
+  root.BTL = { sdlt, sdltRegime, irrAnnual, run, volStats, addM, mdiff, taxView, tyStart, tyLabel };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+(() => {
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const KEY_ORDER = ['United Kingdom', 'Great Britain', 'England and Wales', 'England', 'Wales', 'Scotland', 'Northern Ireland',
     'North East', 'North West', 'Yorkshire and The Humber', 'East Midlands', 'West Midlands Region', 'East of England',
@@ -100979,6 +103387,11 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
   for (const sel of $$('#ctl-local-type')) sel.addEventListener('change', () => dash.setParams({ localType: sel.value }));
   for (const sel of $$('#ctl-infl')) sel.addEventListener('change', () => dash.setParams({ infl: sel.value }));
   for (const b of $$('.hm-segbtn')) b.addEventListener('click', () => dash.setParams({ real: b.dataset.real === '1' }));
+  for (const sel of $$('#ctl-btl-region')) sel.addEventListener('change', () => dash.setParams({ btlRegion: sel.value }));
+  for (const sel of $$('#ctl-tax-band')) sel.addEventListener('change', () => dash.setParams({ taxBand: sel.value }));
+  for (const sel of $$('#ctl-tax-wrap')) sel.addEventListener('change', () => dash.setParams({ taxWrap: sel.value }));
+  for (const sel of $$('#ctl-btl-ltv')) sel.addEventListener('change', () => dash.setParams({ btlLtv: +sel.value }));
+  for (const inp of $$('.hm-btlin')) inp.addEventListener('change', () => { const v = +inp.value; if (isFinite(v) && v >= 0) dash.setParams({ ['btl_' + inp.id.slice(4)]: v }); });
   for (const inp of $$('#ctl-local-q')) inp.addEventListener('input', () => dash.setParams({ localQ: inp.value }));
   for (const inp of $$('#ctl-invest')) inp.addEventListener('change', () => { const v = +inp.value; if (v >= 1000 && v <= 1e8) dash.setParams({ invest: Math.round(v) }); });
   for (const inp of $$('#ctl-loan')) inp.addEventListener('change', () => { const v = +inp.value; if (v >= 1000 && v <= 1e8) dash.setParams({ loan: Math.round(v) }); });
@@ -101015,6 +103428,12 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
     for (const b of $$('.hm-segbtn')) b.setAttribute('aria-pressed', (b.dataset.real === '1') === isReal ? 'true' : 'false');
     for (const el of $$('.hm')) el.classList.toggle('hm-is-real', isReal);
     for (const el of $$('.hm-realnote')) el.hidden = !isReal;
+    { const rp = dash.params() || {};
+      for (const sel of $$('#ctl-btl-region')) sel.value = BTL_REGIONS.includes(rp.btlRegion) ? rp.btlRegion : 'England';
+      for (const sel of $$('#ctl-tax-band')) sel.value = ['basic', 'higher', 'additional'].includes(rp.taxBand) ? rp.taxBand : 'higher';
+      for (const sel of $$('#ctl-tax-wrap')) sel.value = rp.taxWrap === 'isa' ? 'isa' : 'gia';
+      for (const sel of $$('#ctl-btl-ltv')) sel.value = String(isFinite(+rp.btlLtv) && rp.btlLtv != null ? +rp.btlLtv : 0);
+      for (const inp of $$('.hm-btlin')) { if (inp === document.activeElement) continue; const key = inp.id.slice(4); const v = rp['btl_' + key]; inp.value = v != null && v !== '' ? v : BTL_DEF[key]; } }
     for (const inp of $$('#ctl-local-q')) if (inp !== document.activeElement) inp.value = p.localQ || '';
     for (const inp of $$('#ctl-invest')) if (inp !== document.activeElement) inp.value = p.invest;
     for (const inp of $$('#ctl-loan')) if (inp !== document.activeElement) inp.value = p.loan;
@@ -101540,6 +103959,244 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
     rows.push({ _cls: 'hm-total', cells: [{ text: 'Change', cls: 'hm-l' }, { text: pct(growth(A.price, B.price)), cls: cls(growth(A.price, B.price)) }, ok(A.rate) && ok(B.rate) ? ppt(B.rate - A.rate) : '—',
       { text: pct(growth(A.pm_, B.pm_)), cls: '' }, { text: pct(rc) + ' real', cls: '' }] });
     table(el, [{ label: 'Month' }, { label: 'Average price' }, { label: '2-yr fixed rate' }, { label: 'Monthly repayment' }, { label: 'In ' + mshort(per.to) + ' £' }], rows);
+  });
+
+  // ---------- buy-to-let vs S&P 500 ----------
+  const BTL_DEF = { buyFees: 2500, mortFee: 1995, spread: 0.75, voidPct: 4, mgmtPct: 12, maintPct: 1, fixedCosts: 600, sellPct: 1.5, sellFee: 1500, fundFee: 0.1 };
+  const BTL_REGIONS = ['England', 'North East', 'North West', 'Yorkshire and The Humber', 'East Midlands', 'West Midlands Region', 'East of England', 'London', 'South East', 'South West', 'Northern Ireland'];
+  const YIELD_REGIONS = ['United Kingdom', 'England', 'Wales', 'Scotland', 'Northern Ireland', 'North East', 'North West', 'Yorkshire and The Humber', 'East Midlands', 'West Midlands Region', 'East of England', 'London', 'South East', 'South West'];
+  const PFIELD = { price: 'price', detached: 'detached', semi: 'semi', terraced: 'terraced', flat: 'flat' };
+  const RFIELD = { price: 'rent', detached: 'rent_detached', semi: 'rent_semi', terraced: 'rent_terraced', flat: 'rent_flat' };
+  const TYPE_SHORT = { price: 'All types', detached: 'Detached', semi: 'Semi', terraced: 'Terraced', flat: 'Flat' };
+
+  let RC = { src: null, v: null };
+  function rents() {
+    const d = dash.data('rent'); if (d.status !== 'ok' || !d.data || !d.data.length) return null;
+    if (RC.src === d.data) return RC.v;
+    const by = new Map();
+    for (const r of d.data) { const o = {}; for (const k of Object.values(RFIELD)) o[k] = nz(r[k]); by.set(r.area + '|' + r.month, o); }
+    RC = { src: d.data, v: by }; return by;
+  }
+  let SC = { src: null, v: null };
+  function spx() {
+    const d = dash.data('sp500'); if (d.status !== 'ok' || !d.data || !d.data.length) return null;
+    if (SC.src === d.data) return SC.v;
+    const by = new Map(d.data.map((r) => [r.month, { tr: nz(r.tr_index_gbp), px: nz(r.sp500_gbp), y: ok(nz(r.div_yield_pct)) ? nz(r.div_yield_pct) / 100 : null }]));
+    SC = { src: d.data, v: by }; return by;
+  }
+  function btlAssump() {
+    const p = dash.params() || {}; const g = (k) => { const v = p['btl_' + k]; return ok(+v) && v !== '' && v !== null ? +v : BTL_DEF[k]; };
+    return { ltv: ok(+p.btlLtv) ? +p.btlLtv : 0, spread: g('spread'), buyFees: g('buyFees'), mortFee: g('mortFee'), sellPct: g('sellPct') / 100, sellFee: g('sellFee'),
+      voidPct: g('voidPct') / 100, mgmtPct: g('mgmtPct') / 100, maintPct: g('maintPct') / 100, fixedCosts: g('fixedCosts'), fundFee: g('fundFee') / 100 };
+  }
+  function btlRegion() { const p = dash.params() || {}; return BTL_REGIONS.includes(p.btlRegion) ? p.btlRegion : 'England'; }
+  const BCACHE = new Map();
+  function btlRun(area, ptype) {
+    const h = head(), rr = rents(), s = spx(), c = cpiData(), b = boe(), per = period();
+    if (!h || !rr || !s || !c || !b || !per) return null;
+    const a = btlAssump();
+    const key = [area, ptype, per.from, per.to, JSON.stringify(a)].join('|');
+    if (BCACHE.has(key) && BCACHE.get(key).src === h) return BCACHE.get(key).v;
+    const pf = PFIELD[ptype], rf = RFIELD[ptype];
+    const inp = { buy: per.from, sell: per.to,
+      price: (m) => { const r = getRaw(h, area, m); return r ? r[pf] : null; },
+      rent: (m) => { const r = rr.get(area + '|' + m); return r ? r[rf] : null; },
+      rate: (m) => { const r = b.by.get(m); return r ? r.fix2_75 : null; },
+      cpi: (m) => { const r = c.by.get(m); return r ? r.cpih : null; },
+      sp: (m) => s.get(m) || {} };
+    const v = BTL.run(inp, a); if (v) v.inp = inp;
+    if (BCACHE.size > 400) BCACHE.clear();
+    BCACHE.set(key, { src: h, v });
+    return v;
+  }
+  function inflAnnual(per) {
+    const c = cpiData(); if (!c) return null; const p = P(); const k = p.infl === 'cpi' ? 'cpi' : 'cpih';
+    const a = c.by.get(per.from), b = c.by.get(per.to); if (!a || !b || per.n < 1) return null;
+    return Math.pow(b[k] / a[k], 12 / per.n) - 1;
+  }
+  function adjRate(r, per) { if (!ok(r)) return r; if (!P().real) return r; const i = inflAnnual(per); return ok(i) ? (1 + r) / (1 + i) - 1 : r; }
+  const pctR = (r, dp = 1) => ok(r) ? pct(r * 100, dp) : '—';
+
+  dash.draw('bk', (el) => {
+    const per = period(); const area = btlRegion(); const pt = P().ptype; const res = btlRun(area, pt);
+    const k = el.dataset.k; el.classList.remove('hm-up', 'hm-down');
+    if (!res || !per) { el.textContent = k === 'irr' ? 'Not enough data' : '—'; return; }
+    const a = btlAssump(); const real = !!P().real;
+    const irr = adjRate(res.irr, per), sp = adjRate(res.spIrr, per);
+    const tint = (v) => { if (cls(v)) el.classList.add(cls(v)); };
+    const rr = rents(); const r0 = rr && rr.get(area + '|' + per.from);
+    if (k === 'gy') el.textContent = ok(res.grossYield) ? (res.grossYield * 100).toFixed(1) + '%' : '—';
+    else if (k === 'gylabel') el.textContent = areaLabel(area) + ' · ' + TYPE_SHORT[pt].toLowerCase() + ' · rent ' + gbp(r0 && r0[RFIELD[pt]]) + '/month, price ' + gbpK(res.P0) + ' (' + mshort(per.from) + ')';
+    else if (k === 'ny') el.textContent = ok(res.netYield) ? (res.netYield * 100).toFixed(1) + '%' : '—';
+    else if (k === 'irr') { el.textContent = pctR(irr, 1); tint(irr); }
+    else if (k === 'irrlabel') el.textContent = (a.ltv > 0 ? Math.round(a.ltv * 100) + '% interest-only mortgage' : 'Cash purchase') + (real ? ' · after inflation' : ' · before tax') + (res.rentEst ? ' · last ' + res.rentEst + ' months of rent estimated' : '');
+    else if (k === 'sp') { el.textContent = pctR(sp, 1); tint(sp); }
+    else if (k === 'gap') { const g = ok(irr) && ok(sp) ? (irr - sp) * 100 : null; el.textContent = ok(g) ? (g > 0 ? '+' : g < 0 ? '−' : '') + Math.abs(g).toFixed(1) + ' pts' : '—'; tint(g); }
+    else if (k === 'gaplabel') { const g = ok(irr) && ok(sp) ? irr - sp : null; el.textContent = !ok(g) ? '—' : g >= 0 ? 'Buy-to-let ahead each year' : 'S&P 500 ahead each year'; }
+    else if (k === 'sdlt') el.textContent = gbp(res.tax);
+    else if (k === 'sdltlabel') el.textContent = mshort(per.from) + ': ' + res.regime;
+  });
+
+  dash.draw('btlchart', (el) => {
+    const per = period(); const area = btlRegion(); const res = btlRun(area, P().ptype);
+    if (!res || !per) { el.replaceChildren(); el.textContent = 'Not enough rent or price data for this choice.'; return; }
+    const c = cpiData(); const k = P().infl === 'cpi' ? 'cpi' : 'cpih'; const real = !!P().real;
+    const base = c && c.by.get(per.to) ? c.by.get(per.to)[k] : null;
+    const df = (m) => { if (!real || !c || !ok(base)) return 1; const r = c.by.get(m); return r ? base / r[k] : 1; };
+    const mk = (f) => res.series.filter((d) => ok(d[f])).map((d) => ({ m: d.m, v: d[f] * df(d.m) }));
+    const series = [
+      { name: 'Buy-to-let', short: 'Buy-to-let', color: 'var(--hm-s1)', width: 2.5, pts: mk('btl') },
+      { name: 'S&P 500 total return', short: 'S&P 500', color: 'var(--hm-s3)', pts: mk('sp') },
+      { name: 'S&P 500 price only', short: 'S&P price', color: 'var(--hm-s5)', pts: mk('spPx') },
+    ];
+    lineChart(el, { series, xFrom: per.from, xTo: per.to, endLabels: true, refLine: res.upfront * df(per.from), zero: false,
+      aria: 'Value of the same starting cash: buy-to-let against the S&P 500',
+      tipExtra: (tip) => { tip.appendChild(tipRow(null, 'Started with', gbp(res.upfront * df(per.from)))); } });
+  });
+
+  dash.draw('btlbridge', (el) => {
+    const per = period(); const res = btlRun(btlRegion(), P().ptype); if (!res || !per) return dashOut(el);
+    const t = res.tot; const neg = (v) => ok(v) ? '−' + gbp(v).replace('£', '£') : '—';
+    const row = (label, val, opts = {}) => ({ _cls: opts.total ? 'hm-total' : '', cells: [{ text: label, cls: 'hm-l' + (opts.muted ? ' hm-muted' : '') }, { text: val, cls: opts.cls || '' }] });
+    const mult = res.endValue / res.upfront, spMult = ok(res.spEnd) ? res.spEnd / res.upfront : null;
+    const rows = [
+      row('Purchase price', gbp(res.P0), { muted: true }),
+      row('Mortgage', res.loan ? '−' + gbp(res.loan) : '£0', { muted: true }),
+      row('Stamp duty (higher rates)', gbp(res.tax)),
+      row('Legal, survey and mortgage fees', gbp(res.buyFees)),
+      row('Cash put in at the start', gbp(res.upfront), { total: true }),
+      row('Rent due', gbp(t.rent)),
+      row('Void periods', neg(t.voids)),
+      row('Letting and management', neg(t.mgmt)),
+      row('Maintenance and repairs', neg(t.maint)),
+      row('Insurance and compliance', neg(t.fixed)),
+      row('Mortgage interest', t.interest ? neg(t.interest) : '£0'),
+      row('Net rental income', gbp(res.cumCash), { total: true, cls: cls(res.cumCash) }),
+      row('Sale price (' + mshort(per.to) + ')', gbp(res.Pn)),
+      row('Selling costs', neg(res.saleCosts)),
+      row('Repay mortgage', res.loan ? neg(res.loan) : '£0'),
+      row('Cash back in total', gbp(res.endValue), { total: true }),
+      row('Profit on buy-to-let', gbpS(res.profit) + ' (' + mult.toFixed(2) + '×)', { total: true, cls: cls(res.profit) }),
+      row('Same cash in the S&P 500 (dividends reinvested)', ok(res.spEnd) ? gbp(res.spEnd) + ' (' + spMult.toFixed(2) + '×)' : '—', { total: true }),
+      row('S&P 500 with dividends taken as cash', res.spIncome ? gbp(res.spIncome.totalDivs) + ' dividends + ' + gbp(res.spIncome.endCapital) + ' capital' : '—', { muted: true }),
+    ];
+    table(el, [{ label: mshort(per.from) + ' to ' + mshort(per.to) + ' · cash terms' }, { label: '£' }], rows);
+  });
+
+  dash.draw('btlrisk', (el) => {
+    const per = period(); const area = btlRegion(); const pt = P().ptype; const res = btlRun(area, pt);
+    const h = head(), rr = rents(), s = spx(); if (!res || !per || !h || !rr || !s) return dashOut(el);
+    const a = btlAssump(); const pf = PFIELD[pt], rf = RFIELD[pt];
+    const idx = [{ m: per.from, v: 1 }]; let v = 1, lastR = null;
+    for (let i = 1; i <= per.n; i++) {
+      const m = BTL.addM(per.from, i), m0 = BTL.addM(per.from, i - 1);
+      const p1 = getRaw(h, area, m), p0 = getRaw(h, area, m0); const P1 = p1 && p1[pf], P0 = p0 && p0[pf];
+      let R = (rr.get(area + '|' + m) || {})[rf]; if (!ok(R)) R = lastR; else lastR = R;
+      if (!ok(P1) || !ok(P0) || !ok(R)) break;
+      const net = R * (1 - a.voidPct) * (1 - a.mgmtPct) - P0 * a.maintPct / 12 - a.fixedCosts / 12;
+      v *= (P1 + net) / P0; idx.push({ m, v });
+    }
+    const sIdx = []; for (let i = 0; i <= per.n; i++) { const m = BTL.addM(per.from, i); const r = s.get(m); if (r && ok(r.tr)) sIdx.push({ m, v: r.tr }); }
+    const st = (arr) => { const z = BTL.volStats(arr); const n = arr.length - 1; const ret = n >= 1 ? Math.pow(arr[arr.length - 1].v / arr[0].v, 12 / n) - 1 : null; return Object.assign(z, { ret: adjRate(ret, per) }); };
+    const b = st(idx), sp = st(sIdx);
+    const lev = a.ltv > 0 ? 1 / (1 - a.ltv) : 1;
+    const mkRow = (label, z, retOverride, volMult) => {
+      const ret = retOverride !== undefined ? retOverride : z.ret; const vol = ok(z.volAnnual) ? z.volAnnual * (volMult || 1) : null;
+      return { cells: [{ text: label, cls: 'hm-l' }, { text: pctR(ret), cls: cls(ret) }, ok(vol) ? (vol * 100).toFixed(1) + '%' : '—', ok(ret) && ok(vol) && vol > 0 ? (ret / vol).toFixed(2) : '—',
+        { text: pctR(z.worst12 != null ? z.worst12 * (volMult || 1) : null), cls: cls(z.worst12) }, { text: pctR(z.maxDrawdown * (volMult || 1)), cls: cls(z.maxDrawdown) }] };
+    };
+    const rows = [mkRow('Property index, no mortgage', b)];
+    if (a.ltv > 0) rows.push(mkRow('Buy-to-let with ' + Math.round(a.ltv * 100) + '% mortgage (approx.)', b, adjRate(res.irr, per), lev));
+    rows.push(mkRow('S&P 500 total return (£)', sp));
+    table(el, [{ label: 'Investment' }, { label: 'Return a year' }, { label: 'Volatility' }, { label: 'Return ÷ volatility' }, { label: 'Worst 12 months' }, { label: 'Largest fall' }], rows);
+  });
+
+  dash.draw('btlmatrix', (el) => {
+    const per = period(); if (!per || !head() || !rents() || !spx()) return dashOut(el);
+    const types = Object.keys(PFIELD); const cur = btlRegion();
+    let spRef = null;
+    const rows = BTL_REGIONS.map((area) => ({ _cls: area === cur ? 'hm-sel' : '', _click: () => dash.setParams({ btlRegion: area }), cells: [{ text: areaLabel(area), cls: 'hm-l' }].concat(types.map((t) => {
+      const r = btlRun(area, t); if (!r) return { text: '—', cls: 'hm-muted' };
+      const irr = adjRate(r.irr, per), sp = adjRate(r.spIrr, per); if (ok(sp)) spRef = sp;
+      return { text: pctR(irr), cls: ok(irr) && ok(sp) ? (irr >= sp ? 'hm-good' : 'hm-bad') : '' };
+    })) }));
+    rows.push({ _cls: 'hm-total', cells: [{ text: 'S&P 500 total return (£)', cls: 'hm-l' }].concat(types.map(() => pctR(spRef))) });
+    table(el, [{ label: 'Region' }].concat(types.map((t) => ({ label: TYPE_SHORT[t] }))), rows);
+  });
+
+  dash.draw('btlyields', (el) => {
+    const per = period(); const h = head(), rr = rents(); if (!per || !h || !rr) return dashOut(el);
+    const a = btlAssump(); const types = Object.keys(PFIELD);
+    const at = (area, t) => {
+      for (let i = 0; i < 6; i++) { const m = BTL.addM(per.to, -i); const r = rr.get(area + '|' + m); const p = getRaw(h, area, m); const R = r && r[RFIELD[t]], Pr = p && p[PFIELD[t]]; if (ok(R) && ok(Pr)) return { R, Pr, m, lag: i }; }
+      return null;
+    };
+    let lagNote = false;
+    const rows = YIELD_REGIONS.map((area) => {
+      const cells = [{ text: areaLabel(area), cls: 'hm-l' }];
+      for (const t of types) { const x = at(area, t); if (x && x.lag) lagNote = true; cells.push(x ? ((x.R * 12 / x.Pr) * 100).toFixed(1) + '%' + (x.lag ? '*' : '') : '—'); }
+      const x = at(area, 'price');
+      const ny = x ? (x.R * 12 * (1 - a.voidPct) * (1 - a.mgmtPct) - x.Pr * a.maintPct - a.fixedCosts) / x.Pr : null;
+      cells.push({ text: ok(ny) ? (ny * 100).toFixed(1) + '%' : '—', cls: cls(ny) });
+      return { _cls: area === btlRegion() ? 'hm-sel' : '', cells };
+    });
+    table(el, [{ label: 'Region · ' + mshort(per.to) }].concat(types.map((t) => ({ label: TYPE_SHORT[t] + ' gross' }))).concat([{ label: 'Net (all types)' }]), rows);
+    if (lagNote) { const pn = document.createElement('p'); pn.className = 'hm-note'; pn.textContent = '* Latest month with both rent and price data, up to five months earlier (Northern Ireland rents and prices are published with a lag).'; el.appendChild(pn); }
+  });
+
+
+  dash.draw('btlincomenote', (el) => {
+    const per = period(); const res = btlRun(btlRegion(), P().ptype); if (!res || !per) return dashOut(el);
+    const si = res.spIncome;
+    el.textContent = 'Yes: rent is in the buy-to-let return as cash received each month, like dividends paid out. Taking the S&P 500 dividends as cash instead of reinvesting gives ' + (si ? pctR(adjRate(si.irr, per)) : '—') + ' a year, against ' + pctR(adjRate(res.spIrr, per)) + ' with dividends reinvested, so the comparison does not depend on reinvestment. The S&P 500 pays far less income: its return comes mostly from price growth.';
+  });
+  dash.draw('btlincome', (el) => {
+    const per = period(); const res = btlRun(btlRegion(), P().ptype); if (!res || !per) return dashOut(el);
+    const yrs = new Map();
+    for (const x of res.months) { const y = x.m.slice(0, 4); const o = yrs.get(y) || { y, n: 0, rent: 0, costs: 0, interest: 0, net: 0, divs: 0 }; o.n++; o.rent += x.gross; o.costs += x.voids + x.mgmt + x.maint + x.fixed; o.interest += x.interest; o.net += x.net; yrs.set(y, o); }
+    if (res.spIncome) for (const d of res.spIncome.divs) { const o = yrs.get(d.m.slice(0, 4)); if (o) o.divs += d.d; }
+    const rows = [...yrs.values()].map((o) => ({ cells: [{ text: o.y + (o.n < 12 ? ' (' + o.n + ' mths)' : ''), cls: 'hm-l' }, gbp(o.rent), '−' + gbp(o.costs), o.interest ? '−' + gbp(o.interest) : '£0',
+      { text: gbp(o.net), cls: cls(o.net) }, { text: ((o.net / res.upfront) * (12 / o.n) * 100).toFixed(1) + '%', cls: cls(o.net) }, gbp(o.divs), ((o.divs / res.upfront) * (12 / o.n) * 100).toFixed(1) + '%'] }));
+    const T = [...yrs.values()].reduce((s, o) => ({ rent: s.rent + o.rent, costs: s.costs + o.costs, interest: s.interest + o.interest, net: s.net + o.net, divs: s.divs + o.divs }), { rent: 0, costs: 0, interest: 0, net: 0, divs: 0 });
+    rows.push({ _cls: 'hm-total', cells: [{ text: 'Total', cls: 'hm-l' }, gbp(T.rent), '−' + gbp(T.costs), T.interest ? '−' + gbp(T.interest) : '£0', gbp(T.net), '', gbp(T.divs), ''] });
+    table(el, [{ label: 'Year' }, { label: 'Rent due' }, { label: 'Running costs' }, { label: 'Mortgage interest' }, { label: 'Net rental income' }, { label: 'On cash put in (a year)' }, { label: 'S&P 500 dividends' }, { label: 'On cash put in (a year)' }], rows);
+  });
+
+  // ---------- after tax (separate tab) ----------
+  const taxBand = () => { const v = (dash.params() || {}).taxBand; return ['basic', 'higher', 'additional'].includes(v) ? v : 'higher'; };
+  const taxWrap = () => ((dash.params() || {}).taxWrap === 'isa' ? 'isa' : 'gia');
+  function taxRes() { const res = btlRun(btlRegion(), P().ptype); if (!res || !res.inp) return null; return { res, t: BTL.taxView(res, res.inp, taxBand(), taxWrap()) }; }
+  dash.draw('tk', (el) => {
+    const per = period(); const x = taxRes(); const k = el.dataset.k; el.classList.remove('hm-up', 'hm-down');
+    if (!x || !x.t || !per) { el.textContent = '—'; return; }
+    const { res, t } = x; const tint = (v) => { if (cls(v)) el.classList.add(cls(v)); };
+    const b = adjRate(t.btlIrrAfter, per), s = adjRate(t.spIrrAfter, per);
+    if (k === 'btl') { el.textContent = pctR(b); tint(b); }
+    else if (k === 'btlpre') el.textContent = 'Before tax ' + pctR(adjRate(res.irr, per)) + ' · ' + areaLabel(btlRegion()) + (res.loan ? ' · ' + Math.round(res.a.ltv * 100) + '% mortgage' : ' · cash');
+    else if (k === 'sp') { el.textContent = pctR(s); tint(s); }
+    else if (k === 'sppre') el.textContent = 'Before tax ' + pctR(adjRate(res.spIrr, per)) + ' · ' + (t.wrapper === 'isa' ? 'ISA' : 'general account');
+    else if (k === 'gap') { const g = ok(b) && ok(s) ? (b - s) * 100 : null; el.textContent = ok(g) ? (g > 0 ? '+' : g < 0 ? '−' : '') + Math.abs(g).toFixed(1) + ' pts' : '—'; tint(g); }
+    else if (k === 'gaplabel') el.textContent = ok(b) && ok(s) ? (b >= s ? 'Buy-to-let ahead after tax' : 'S&P 500 ahead after tax') : '—';
+    else if (k === 'inctax') el.textContent = gbp(t.btlIncomeTax);
+    else if (k === 'btlcgt') el.textContent = gbp(t.btlCgt);
+    else if (k === 'btlcgtlabel') el.textContent = 'Gain ' + gbp(t.btlGain) + ' at ' + Math.round(t.rates.cgtResi * 100) + '%, after £' + d3.format(',')(t.rates.aea) + ' allowance';
+    else if (k === 'sptax') el.textContent = gbp(t.spDivTax + t.spCgt);
+    else if (k === 'sptaxlabel') el.textContent = t.wrapper === 'isa' ? 'Held in an ISA' : 'Dividend tax ' + gbp(t.spDivTax) + ' + CGT ' + gbp(t.spCgt);
+  });
+  dash.draw('taxcompare', (el) => {
+    const per = period(); const x = taxRes(); if (!x || !x.t || !per) return dashOut(el);
+    const { res, t } = x;
+    const rows = [
+      { cells: [{ text: 'Buy-to-let', cls: 'hm-l' }, gbp(res.upfront), gbp(res.endValue), { text: pctR(adjRate(res.irr, per)), cls: cls(res.irr) }, gbp(t.btlIncomeTax + t.btlCgt), gbp(t.btlEndAfter), { text: pctR(adjRate(t.btlIrrAfter, per)), cls: cls(t.btlIrrAfter) }] },
+      { cells: [{ text: 'S&P 500 (' + (t.wrapper === 'isa' ? 'ISA' : 'general account') + ')', cls: 'hm-l' }, gbp(res.upfront), gbp(t.spValue + t.spDivTax), { text: pctR(adjRate(res.spIrr, per)), cls: cls(res.spIrr) }, gbp(t.spDivTax + t.spCgt), gbp(t.spEndAfter), { text: pctR(adjRate(t.spIrrAfter, per)), cls: cls(t.spIrrAfter) }] },
+    ];
+    table(el, [{ label: mshort(per.from) + ' to ' + mshort(per.to) }, { label: 'Cash put in' }, { label: 'Back before tax' }, { label: 'Return a year before tax' }, { label: 'Tax paid' }, { label: 'Back after tax' }, { label: 'Return a year after tax' }], rows);
+  });
+  dash.draw('taxyears', (el) => {
+    const per = period(); const x = taxRes(); if (!x || !x.t || !per) return dashOut(el);
+    const { t } = x; const sp = new Map(t.spYears.map((y) => [y.ty, y]));
+    const rows = t.btlYears.map((y) => { const s = sp.get(y.ty) || { divs: 0, tax: 0 }; return { cells: [{ text: y.label, cls: 'hm-l' }, gbp(y.profit), gbp(y.finance), Math.round(y.share * 100) + '%', gbp(y.taxable), { text: gbp(y.tax), cls: y.tax ? 'hm-down' : '' }, gbp(y.net - y.tax), gbp(s.divs), gbp(s.tax)] }; });
+    table(el, [{ label: 'Tax year' }, { label: 'Rental profit before finance' }, { label: 'Mortgage interest & fees' }, { label: 'Finance deductible' }, { label: 'Taxable profit' }, { label: 'Income tax' }, { label: 'Net rent after tax' }, { label: 'S&P dividends' }, { label: 'Dividend tax' }], rows);
   });
 
   // ---------- local areas ----------
