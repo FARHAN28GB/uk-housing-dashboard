@@ -433,6 +433,13 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
       <div class="hm-kpi"><span class="hm-kl">Difference <button type="button" class="hm-info" aria-label="What this means" data-tip="Buy-to-let return minus S&amp;P 500 return, in percentage points a year.">i</button></span><b class="hm-kv" data-draw="bk" data-k="gap" data-source="rent sp500">—</b><span class="hm-ks" data-draw="bk" data-k="gaplabel" data-source="rent sp500">—</span></div>
       <div class="hm-kpi"><span class="hm-kl">Stamp duty paid <button type="button" class="hm-info" aria-label="What this means" data-tip="SDLT at the higher rates for additional properties in force in your buy month: 3% surcharge from April 2016, 5% from 31 October 2024, on top of the bands then in force (including the 2020–21 holiday).">i</button></span><b class="hm-kv" data-draw="bk" data-k="sdlt" data-source="rent">—</b><span class="hm-ks" data-draw="bk" data-k="sdltlabel" data-source="rent">—</span></div>
     </div>
+    <div class="hm-card" id="btl-100k-card">
+      <h2>If you invest the same lump sum <button type="button" class="hm-info" aria-label="What this means" data-tip="The same cash goes into each option at the start of your period and everything is cashed in at the end. Buy-to-let: rent after all costs and mortgage interest is paid to you each month; the property is sold at the end and the mortgage repaid. S&amp;P 500 reinvested: dividends buy more units and compound. S&amp;P 500 cash dividends: dividends are paid to you and not reinvested. Before tax; see the After tax tab.">i</button></h2>
+      <div class="hm-controls" style="margin-bottom:8px"><label class="hm-field"><span>Amount invested (£)</span><input id="ctl-btl-amt" type="number" min="1000" step="1000" value="100000" aria-label="Amount invested (£)"></label></div>
+      <p class="hm-note" data-draw="btl100note" data-source="rent sp500">—</p>
+      <div class="hm-tablewrap" data-draw="btl100" data-source="rent sp500"></div>
+      <p class="hm-note">Rent and cash dividends are counted at face value, as money you spend or keep as cash. If you reinvested them you would end with more. Return a year allows for when each pound arrives, so it is the fairest single figure for comparison. Total back shows the plain pounds. Figures are scaled from the average property in your region and type, so stamp duty is worked out on that property, not on the scaled price.</p>
+    </div>
     <div class="hm-card" id="btl-chart-card">
       <h2>What the same cash grew to <button type="button" class="hm-info" aria-label="What this means" data-tip="The buy-to-let line is what you would have if you sold that month: sale price after selling costs, minus the mortgage, plus all net rent collected. The S&amp;P 500 lines invest the same starting cash.">i</button></h2>
       <div class="hm-legend">
@@ -103389,6 +103396,7 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
   for (const b of $$('.hm-segbtn')) b.addEventListener('click', () => dash.setParams({ real: b.dataset.real === '1' }));
   for (const sel of $$('#ctl-btl-region')) sel.addEventListener('change', () => dash.setParams({ btlRegion: sel.value }));
   for (const sel of $$('#ctl-tax-band')) sel.addEventListener('change', () => dash.setParams({ taxBand: sel.value }));
+  for (const inp of $$('#ctl-btl-amt')) inp.addEventListener('change', () => { const v = Math.max(1000, Math.round(+inp.value || 100000)); inp.value = v; dash.setParams({ btlAmt: v }); });
   for (const sel of $$('#ctl-tax-wrap')) sel.addEventListener('change', () => dash.setParams({ taxWrap: sel.value }));
   for (const sel of $$('#ctl-btl-ltv')) sel.addEventListener('change', () => dash.setParams({ btlLtv: +sel.value }));
   for (const inp of $$('.hm-btlin')) inp.addEventListener('change', () => { const v = +inp.value; if (isFinite(v) && v >= 0) dash.setParams({ ['btl_' + inp.id.slice(4)]: v }); });
@@ -103432,6 +103440,7 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
       for (const sel of $$('#ctl-btl-region')) sel.value = BTL_REGIONS.includes(rp.btlRegion) ? rp.btlRegion : 'England';
       for (const sel of $$('#ctl-tax-band')) sel.value = ['basic', 'higher', 'additional'].includes(rp.taxBand) ? rp.taxBand : 'higher';
       for (const sel of $$('#ctl-tax-wrap')) sel.value = rp.taxWrap === 'isa' ? 'isa' : 'gia';
+      for (const inp of $$('#ctl-btl-amt')) if (inp !== document.activeElement) inp.value = +rp.btlAmt > 0 ? +rp.btlAmt : 100000;
       for (const sel of $$('#ctl-btl-ltv')) sel.value = String(isFinite(+rp.btlLtv) && rp.btlLtv != null ? +rp.btlLtv : 0);
       for (const inp of $$('.hm-btlin')) { if (inp === document.activeElement) continue; const key = inp.id.slice(4); const v = rp['btl_' + key]; inp.value = v != null && v !== '' ? v : BTL_DEF[key]; } }
     for (const inp of $$('#ctl-local-q')) if (inp !== document.activeElement) inp.value = p.localQ || '';
@@ -104144,6 +104153,46 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
     if (lagNote) { const pn = document.createElement('p'); pn.className = 'hm-note'; pn.textContent = '* Latest month with both rent and price data, up to five months earlier (Northern Ireland rents and prices are published with a lag).'; el.appendChild(pn); }
   });
 
+
+  const btlAmt = () => { const v = +(dash.params() || {}).btlAmt; return v > 0 ? v : 100000; };
+  function lump() {
+    const per = period(); const res = btlRun(btlRegion(), P().ptype); if (!res || !per) return null;
+    const amt = btlAmt(), f = amt / res.upfront, si = res.spIncome;
+    const opts = [
+      { name: 'Buy-to-let (rent paid to you)', got: res.cumCash * f, end: (res.endValue - res.cumCash) * f, irr: res.irr },
+      { name: 'S&P 500, dividends reinvested', got: 0, end: ok(res.spEnd) ? res.spEnd * f : null, irr: res.spIrr },
+      { name: 'S&P 500, dividends paid to you', got: si ? si.totalDivs * f : null, end: si ? si.endCapital * f : null, irr: si ? si.irr : null },
+    ];
+    for (const o of opts) o.total = ok(o.got) && ok(o.end) ? o.got + o.end : null;
+    return { per, res, amt, f, opts };
+  }
+  dash.draw('btl100note', (el) => {
+    const L = lump(); if (!L) return dashOut(el);
+    const { per, res, amt, f, opts } = L; const valid = opts.filter((o) => ok(o.total));
+    if (!valid.length) { el.textContent = '—'; return; }
+    const best = valid.reduce((x, y) => (y.total > x.total ? y : x));
+    const btl = opts[0];
+    const buys = res.loan ? gbp(amt) + ' pays the deposit, stamp duty and fees on a ' + gbp(res.P0 * f) + ' property with a ' + Math.round(res.a.ltv * 100) + '% mortgage.' : gbp(amt) + ' buys a ' + gbp(res.P0 * f) + ' property outright after stamp duty and fees.';
+    el.textContent = mshort(per.from) + ' to ' + mshort(per.to) + ', ' + areaLabel(btlRegion()) + ': ' + buys + ' Best overall: ' + best.name + ', with ' + gbp(best.total) + ' back in total' + (best === btl ? '.' : ', ' + gbp(best.total - btl.total) + ' more than buy-to-let.');
+  });
+  dash.draw('btl100', (el) => {
+    const L = lump(); if (!L) return dashOut(el);
+    const { per, amt, opts } = L; const valid = opts.filter((o) => ok(o.total));
+    const bestT = valid.length ? Math.max(...valid.map((o) => o.total)) : null;
+    const bestR = Math.max(...opts.filter((o) => ok(o.irr)).map((o) => adjRate(o.irr, per)));
+    const cell = (v, isBest) => ({ text: v, cls: isBest ? 'hm-good' : '' });
+    const R = (label, fn, opt = {}) => ({ _cls: opt.total ? 'hm-total' : '', cells: [{ text: label, cls: 'hm-l' }].concat(opts.map(fn)) });
+    const rows = [
+      R('Cash put in at the start', () => gbp(amt)),
+      R('Cash paid to you along the way', (o) => (o.got ? gbp(o.got) : '£0') ),
+      R('Value cashed in at ' + mshort(per.to), (o) => (ok(o.end) ? gbp(o.end) : '—')),
+      R('Total back', (o) => cell(ok(o.total) ? gbp(o.total) : '—', ok(o.total) && o.total === bestT), { total: true }),
+      R('Profit', (o) => ({ text: ok(o.total) ? gbpS(o.total - amt) : '—', cls: ok(o.total) ? cls(o.total - amt) : '' })),
+      R('Money multiplied by', (o) => (ok(o.total) ? (o.total / amt).toFixed(2) + '×' : '—')),
+      R('Return a year', (o) => { const r = adjRate(o.irr, per); return cell(pctR(r), ok(r) && r === bestR); }, { total: true }),
+    ];
+    table(el, [{ label: 'Cash terms, before tax' }].concat(opts.map((o) => ({ label: o.name }))), rows);
+  });
 
   dash.draw('btlincomenote', (el) => {
     const per = period(); const res = btlRun(btlRegion(), P().ptype); if (!res || !per) return dashOut(el);
