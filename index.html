@@ -14,7 +14,7 @@ License: MIT
 */
 !function(e,t){"function"==typeof define&&define.amd?define([],t):"object"==typeof module&&"undefined"!=typeof exports?module.exports=t():e.Papa=t()}(this,function s(){"use strict";var f="undefined"!=typeof self?self:"undefined"!=typeof window?window:void 0!==f?f:{};var n=!f.document&&!!f.postMessage,o=f.IS_PAPA_WORKER||!1,a={},u=0,b={parse:function(e,t){var r=(t=t||{}).dynamicTyping||!1;J(r)&&(t.dynamicTypingFunction=r,r={});if(t.dynamicTyping=r,t.transform=!!J(t.transform)&&t.transform,t.worker&&b.WORKERS_SUPPORTED){var i=function(){if(!b.WORKERS_SUPPORTED)return!1;var e=(r=f.URL||f.webkitURL||null,i=s.toString(),b.BLOB_URL||(b.BLOB_URL=r.createObjectURL(new Blob(["var global = (function() { if (typeof self !== 'undefined') { return self; } if (typeof window !== 'undefined') { return window; } if (typeof global !== 'undefined') { return global; } return {}; })(); global.IS_PAPA_WORKER=true; ","(",i,")();"],{type:"text/javascript"})))),t=new f.Worker(e);var r,i;return t.onmessage=_,t.id=u++,a[t.id]=t}();return i.userStep=t.step,i.userChunk=t.chunk,i.userComplete=t.complete,i.userError=t.error,t.step=J(t.step),t.chunk=J(t.chunk),t.complete=J(t.complete),t.error=J(t.error),delete t.worker,void i.postMessage({input:e,config:t,workerId:i.id})}var n=null;b.NODE_STREAM_INPUT,"string"==typeof e?(e=function(e){if(65279===e.charCodeAt(0))return e.slice(1);return e}(e),n=t.download?new l(t):new p(t)):!0===e.readable&&J(e.read)&&J(e.on)?n=new g(t):(f.File&&e instanceof File||e instanceof Object)&&(n=new c(t));return n.stream(e)},unparse:function(e,t){var n=!1,_=!0,m=",",y="\r\n",s='"',a=s+s,r=!1,i=null,o=!1;!function(){if("object"!=typeof t)return;"string"!=typeof t.delimiter||b.BAD_DELIMITERS.filter(function(e){return-1!==t.delimiter.indexOf(e)}).length||(m=t.delimiter);("boolean"==typeof t.quotes||"function"==typeof t.quotes||Array.isArray(t.quotes))&&(n=t.quotes);"boolean"!=typeof t.skipEmptyLines&&"string"!=typeof t.skipEmptyLines||(r=t.skipEmptyLines);"string"==typeof t.newline&&(y=t.newline);"string"==typeof t.quoteChar&&(s=t.quoteChar);"boolean"==typeof t.header&&(_=t.header);if(Array.isArray(t.columns)){if(0===t.columns.length)throw new Error("Option columns is empty");i=t.columns}void 0!==t.escapeChar&&(a=t.escapeChar+s);("boolean"==typeof t.escapeFormulae||t.escapeFormulae instanceof RegExp)&&(o=t.escapeFormulae instanceof RegExp?t.escapeFormulae:/^[=+\-@\t\r].*$/)}();var u=new RegExp(Q(s),"g");"string"==typeof e&&(e=JSON.parse(e));if(Array.isArray(e)){if(!e.length||Array.isArray(e[0]))return h(null,e,r);if("object"==typeof e[0])return h(i||Object.keys(e[0]),e,r)}else if("object"==typeof e)return"string"==typeof e.data&&(e.data=JSON.parse(e.data)),Array.isArray(e.data)&&(e.fields||(e.fields=e.meta&&e.meta.fields||i),e.fields||(e.fields=Array.isArray(e.data[0])?e.fields:"object"==typeof e.data[0]?Object.keys(e.data[0]):[]),Array.isArray(e.data[0])||"object"==typeof e.data[0]||(e.data=[e.data])),h(e.fields||[],e.data||[],r);throw new Error("Unable to serialize unrecognized input");function h(e,t,r){var i="";"string"==typeof e&&(e=JSON.parse(e)),"string"==typeof t&&(t=JSON.parse(t));var n=Array.isArray(e)&&0<e.length,s=!Array.isArray(t[0]);if(n&&_){for(var a=0;a<e.length;a++)0<a&&(i+=m),i+=v(e[a],a);0<t.length&&(i+=y)}for(var o=0;o<t.length;o++){var u=n?e.length:t[o].length,h=!1,f=n?0===Object.keys(t[o]).length:0===t[o].length;if(r&&!n&&(h="greedy"===r?""===t[o].join("").trim():1===t[o].length&&0===t[o][0].length),"greedy"===r&&n){for(var d=[],l=0;l<u;l++){var c=s?e[l]:l;d.push(t[o][c])}h=""===d.join("").trim()}if(!h){for(var p=0;p<u;p++){0<p&&!f&&(i+=m);var g=n&&s?e[p]:p;i+=v(t[o][g],p)}o<t.length-1&&(!r||0<u&&!f)&&(i+=y)}}return i}function v(e,t){if(null==e)return"";if(e.constructor===Date)return JSON.stringify(e).slice(1,25);var r=!1;o&&"string"==typeof e&&o.test(e)&&(e="'"+e,r=!0);var i=e.toString().replace(u,a);return(r=r||!0===n||"function"==typeof n&&n(e,t)||Array.isArray(n)&&n[t]||function(e,t){for(var r=0;r<t.length;r++)if(-1<e.indexOf(t[r]))return!0;return!1}(i,b.BAD_DELIMITERS)||-1<i.indexOf(m)||" "===i.charAt(0)||" "===i.charAt(i.length-1))?s+i+s:i}}};if(b.RECORD_SEP=String.fromCharCode(30),b.UNIT_SEP=String.fromCharCode(31),b.BYTE_ORDER_MARK="\ufeff",b.BAD_DELIMITERS=["\r","\n",'"',b.BYTE_ORDER_MARK],b.WORKERS_SUPPORTED=!n&&!!f.Worker,b.NODE_STREAM_INPUT=1,b.LocalChunkSize=10485760,b.RemoteChunkSize=5242880,b.DefaultDelimiter=",",b.Parser=E,b.ParserHandle=r,b.NetworkStreamer=l,b.FileStreamer=c,b.StringStreamer=p,b.ReadableStreamStreamer=g,f.jQuery){var d=f.jQuery;d.fn.parse=function(o){var r=o.config||{},u=[];return this.each(function(e){if(!("INPUT"===d(this).prop("tagName").toUpperCase()&&"file"===d(this).attr("type").toLowerCase()&&f.FileReader)||!this.files||0===this.files.length)return!0;for(var t=0;t<this.files.length;t++)u.push({file:this.files[t],inputElem:this,instanceConfig:d.extend({},r)})}),e(),this;function e(){if(0!==u.length){var e,t,r,i,n=u[0];if(J(o.before)){var s=o.before(n.file,n.inputElem);if("object"==typeof s){if("abort"===s.action)return e="AbortError",t=n.file,r=n.inputElem,i=s.reason,void(J(o.error)&&o.error({name:e},t,r,i));if("skip"===s.action)return void h();"object"==typeof s.config&&(n.instanceConfig=d.extend(n.instanceConfig,s.config))}else if("skip"===s)return void h()}var a=n.instanceConfig.complete;n.instanceConfig.complete=function(e){J(a)&&a(e,n.file,n.inputElem),h()},b.parse(n.file,n.instanceConfig)}else J(o.complete)&&o.complete()}function h(){u.splice(0,1),e()}}}function h(e){this._handle=null,this._finished=!1,this._completed=!1,this._halted=!1,this._input=null,this._baseIndex=0,this._partialLine="",this._rowCount=0,this._start=0,this._nextChunk=null,this.isFirstChunk=!0,this._completeResults={data:[],errors:[],meta:{}},function(e){var t=w(e);t.chunkSize=parseInt(t.chunkSize),e.step||e.chunk||(t.chunkSize=null);this._handle=new r(t),(this._handle.streamer=this)._config=t}.call(this,e),this.parseChunk=function(e,t){if(this.isFirstChunk&&J(this._config.beforeFirstChunk)){var r=this._config.beforeFirstChunk(e);void 0!==r&&(e=r)}this.isFirstChunk=!1,this._halted=!1;var i=this._partialLine+e;this._partialLine="";var n=this._handle.parse(i,this._baseIndex,!this._finished);if(!this._handle.paused()&&!this._handle.aborted()){var s=n.meta.cursor;this._finished||(this._partialLine=i.substring(s-this._baseIndex),this._baseIndex=s),n&&n.data&&(this._rowCount+=n.data.length);var a=this._finished||this._config.preview&&this._rowCount>=this._config.preview;if(o)f.postMessage({results:n,workerId:b.WORKER_ID,finished:a});else if(J(this._config.chunk)&&!t){if(this._config.chunk(n,this._handle),this._handle.paused()||this._handle.aborted())return void(this._halted=!0);n=void 0,this._completeResults=void 0}return this._config.step||this._config.chunk||(this._completeResults.data=this._completeResults.data.concat(n.data),this._completeResults.errors=this._completeResults.errors.concat(n.errors),this._completeResults.meta=n.meta),this._completed||!a||!J(this._config.complete)||n&&n.meta.aborted||(this._config.complete(this._completeResults,this._input),this._completed=!0),a||n&&n.meta.paused||this._nextChunk(),n}this._halted=!0},this._sendError=function(e){J(this._config.error)?this._config.error(e):o&&this._config.error&&f.postMessage({workerId:b.WORKER_ID,error:e,finished:!1})}}function l(e){var i;(e=e||{}).chunkSize||(e.chunkSize=b.RemoteChunkSize),h.call(this,e),this._nextChunk=n?function(){this._readChunk(),this._chunkLoaded()}:function(){this._readChunk()},this.stream=function(e){this._input=e,this._nextChunk()},this._readChunk=function(){if(this._finished)this._chunkLoaded();else{if(i=new XMLHttpRequest,this._config.withCredentials&&(i.withCredentials=this._config.withCredentials),n||(i.onload=v(this._chunkLoaded,this),i.onerror=v(this._chunkError,this)),i.open(this._config.downloadRequestBody?"POST":"GET",this._input,!n),this._config.downloadRequestHeaders){var e=this._config.downloadRequestHeaders;for(var t in e)i.setRequestHeader(t,e[t])}if(this._config.chunkSize){var r=this._start+this._config.chunkSize-1;i.setRequestHeader("Range","bytes="+this._start+"-"+r)}try{i.send(this._config.downloadRequestBody)}catch(e){this._chunkError(e.message)}n&&0===i.status&&this._chunkError()}},this._chunkLoaded=function(){4===i.readyState&&(i.status<200||400<=i.status?this._chunkError():(this._start+=this._config.chunkSize?this._config.chunkSize:i.responseText.length,this._finished=!this._config.chunkSize||this._start>=function(e){var t=e.getResponseHeader("Content-Range");if(null===t)return-1;return parseInt(t.substring(t.lastIndexOf("/")+1))}(i),this.parseChunk(i.responseText)))},this._chunkError=function(e){var t=i.statusText||e;this._sendError(new Error(t))}}function c(e){var i,n;(e=e||{}).chunkSize||(e.chunkSize=b.LocalChunkSize),h.call(this,e);var s="undefined"!=typeof FileReader;this.stream=function(e){this._input=e,n=e.slice||e.webkitSlice||e.mozSlice,s?((i=new FileReader).onload=v(this._chunkLoaded,this),i.onerror=v(this._chunkError,this)):i=new FileReaderSync,this._nextChunk()},this._nextChunk=function(){this._finished||this._config.preview&&!(this._rowCount<this._config.preview)||this._readChunk()},this._readChunk=function(){var e=this._input;if(this._config.chunkSize){var t=Math.min(this._start+this._config.chunkSize,this._input.size);e=n.call(e,this._start,t)}var r=i.readAsText(e,this._config.encoding);s||this._chunkLoaded({target:{result:r}})},this._chunkLoaded=function(e){this._start+=this._config.chunkSize,this._finished=!this._config.chunkSize||this._start>=this._input.size,this.parseChunk(e.target.result)},this._chunkError=function(){this._sendError(i.error)}}function p(e){var r;h.call(this,e=e||{}),this.stream=function(e){return r=e,this._nextChunk()},this._nextChunk=function(){if(!this._finished){var e,t=this._config.chunkSize;return t?(e=r.substring(0,t),r=r.substring(t)):(e=r,r=""),this._finished=!r,this.parseChunk(e)}}}function g(e){h.call(this,e=e||{});var t=[],r=!0,i=!1;this.pause=function(){h.prototype.pause.apply(this,arguments),this._input.pause()},this.resume=function(){h.prototype.resume.apply(this,arguments),this._input.resume()},this.stream=function(e){this._input=e,this._input.on("data",this._streamData),this._input.on("end",this._streamEnd),this._input.on("error",this._streamError)},this._checkIsFinished=function(){i&&1===t.length&&(this._finished=!0)},this._nextChunk=function(){this._checkIsFinished(),t.length?this.parseChunk(t.shift()):r=!0},this._streamData=v(function(e){try{t.push("string"==typeof e?e:e.toString(this._config.encoding)),r&&(r=!1,this._checkIsFinished(),this.parseChunk(t.shift()))}catch(e){this._streamError(e)}},this),this._streamError=v(function(e){this._streamCleanUp(),this._sendError(e)},this),this._streamEnd=v(function(){this._streamCleanUp(),i=!0,this._streamData("")},this),this._streamCleanUp=v(function(){this._input.removeListener("data",this._streamData),this._input.removeListener("end",this._streamEnd),this._input.removeListener("error",this._streamError)},this)}function r(m){var a,o,u,i=Math.pow(2,53),n=-i,s=/^\s*-?(\d+\.?|\.\d+|\d+\.\d+)([eE][-+]?\d+)?\s*$/,h=/^((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)))$/,t=this,r=0,f=0,d=!1,e=!1,l=[],c={data:[],errors:[],meta:{}};if(J(m.step)){var p=m.step;m.step=function(e){if(c=e,_())g();else{if(g(),0===c.data.length)return;r+=e.data.length,m.preview&&r>m.preview?o.abort():(c.data=c.data[0],p(c,t))}}}function y(e){return"greedy"===m.skipEmptyLines?""===e.join("").trim():1===e.length&&0===e[0].length}function g(){return c&&u&&(k("Delimiter","UndetectableDelimiter","Unable to auto-detect delimiting character; defaulted to '"+b.DefaultDelimiter+"'"),u=!1),m.skipEmptyLines&&(c.data=c.data.filter(function(e){return!y(e)})),_()&&function(){if(!c)return;function e(e,t){J(m.transformHeader)&&(e=m.transformHeader(e,t)),l.push(e)}if(Array.isArray(c.data[0])){for(var t=0;_()&&t<c.data.length;t++)c.data[t].forEach(e);c.data.splice(0,1)}else c.data.forEach(e)}(),function(){if(!c||!m.header&&!m.dynamicTyping&&!m.transform)return c;function e(e,t){var r,i=m.header?{}:[];for(r=0;r<e.length;r++){var n=r,s=e[r];m.header&&(n=r>=l.length?"__parsed_extra":l[r]),m.transform&&(s=m.transform(s,n)),s=v(n,s),"__parsed_extra"===n?(i[n]=i[n]||[],i[n].push(s)):i[n]=s}return m.header&&(r>l.length?k("FieldMismatch","TooManyFields","Too many fields: expected "+l.length+" fields but parsed "+r,f+t):r<l.length&&k("FieldMismatch","TooFewFields","Too few fields: expected "+l.length+" fields but parsed "+r,f+t)),i}var t=1;!c.data.length||Array.isArray(c.data[0])?(c.data=c.data.map(e),t=c.data.length):c.data=e(c.data,0);m.header&&c.meta&&(c.meta.fields=l);return f+=t,c}()}function _(){return m.header&&0===l.length}function v(e,t){return r=e,m.dynamicTypingFunction&&void 0===m.dynamicTyping[r]&&(m.dynamicTyping[r]=m.dynamicTypingFunction(r)),!0===(m.dynamicTyping[r]||m.dynamicTyping)?"true"===t||"TRUE"===t||"false"!==t&&"FALSE"!==t&&(function(e){if(s.test(e)){var t=parseFloat(e);if(n<t&&t<i)return!0}return!1}(t)?parseFloat(t):h.test(t)?new Date(t):""===t?null:t):t;var r}function k(e,t,r,i){var n={type:e,code:t,message:r};void 0!==i&&(n.row=i),c.errors.push(n)}this.parse=function(e,t,r){var i=m.quoteChar||'"';if(m.newline||(m.newline=function(e,t){e=e.substring(0,1048576);var r=new RegExp(Q(t)+"([^]*?)"+Q(t),"gm"),i=(e=e.replace(r,"")).split("\r"),n=e.split("\n"),s=1<n.length&&n[0].length<i[0].length;if(1===i.length||s)return"\n";for(var a=0,o=0;o<i.length;o++)"\n"===i[o][0]&&a++;return a>=i.length/2?"\r\n":"\r"}(e,i)),u=!1,m.delimiter)J(m.delimiter)&&(m.delimiter=m.delimiter(e),c.meta.delimiter=m.delimiter);else{var n=function(e,t,r,i,n){var s,a,o,u;n=n||[",","\t","|",";",b.RECORD_SEP,b.UNIT_SEP];for(var h=0;h<n.length;h++){var f=n[h],d=0,l=0,c=0;o=void 0;for(var p=new E({comments:i,delimiter:f,newline:t,preview:10}).parse(e),g=0;g<p.data.length;g++)if(r&&y(p.data[g]))c++;else{var _=p.data[g].length;l+=_,void 0!==o?0<_&&(d+=Math.abs(_-o),o=_):o=_}0<p.data.length&&(l/=p.data.length-c),(void 0===a||d<=a)&&(void 0===u||u<l)&&1.99<l&&(a=d,s=f,u=l)}return{successful:!!(m.delimiter=s),bestDelimiter:s}}(e,m.newline,m.skipEmptyLines,m.comments,m.delimitersToGuess);n.successful?m.delimiter=n.bestDelimiter:(u=!0,m.delimiter=b.DefaultDelimiter),c.meta.delimiter=m.delimiter}var s=w(m);return m.preview&&m.header&&s.preview++,a=e,o=new E(s),c=o.parse(a,t,r),g(),d?{meta:{paused:!0}}:c||{meta:{paused:!1}}},this.paused=function(){return d},this.pause=function(){d=!0,o.abort(),a=J(m.chunk)?"":a.substring(o.getCharIndex())},this.resume=function(){t.streamer._halted?(d=!1,t.streamer.parseChunk(a,!0)):setTimeout(t.resume,3)},this.aborted=function(){return e},this.abort=function(){e=!0,o.abort(),c.meta.aborted=!0,J(m.complete)&&m.complete(c),a=""}}function Q(e){return e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}function E(j){var z,M=(j=j||{}).delimiter,P=j.newline,U=j.comments,q=j.step,N=j.preview,B=j.fastMode,K=z=void 0===j.quoteChar||null===j.quoteChar?'"':j.quoteChar;if(void 0!==j.escapeChar&&(K=j.escapeChar),("string"!=typeof M||-1<b.BAD_DELIMITERS.indexOf(M))&&(M=","),U===M)throw new Error("Comment character same as delimiter");!0===U?U="#":("string"!=typeof U||-1<b.BAD_DELIMITERS.indexOf(U))&&(U=!1),"\n"!==P&&"\r"!==P&&"\r\n"!==P&&(P="\n");var W=0,H=!1;this.parse=function(i,t,r){if("string"!=typeof i)throw new Error("Input must be a string");var n=i.length,e=M.length,s=P.length,a=U.length,o=J(q),u=[],h=[],f=[],d=W=0;if(!i)return L();if(j.header&&!t){var l=i.split(P)[0].split(M),c=[],p={},g=!1;for(var _ in l){var m=l[_];J(j.transformHeader)&&(m=j.transformHeader(m,_));var y=m,v=p[m]||0;for(0<v&&(g=!0,y=m+"_"+v),p[m]=v+1;c.includes(y);)y=y+"_"+v;c.push(y)}if(g){var k=i.split(P);k[0]=c.join(M),i=k.join(P)}}if(B||!1!==B&&-1===i.indexOf(z)){for(var b=i.split(P),E=0;E<b.length;E++){if(f=b[E],W+=f.length,E!==b.length-1)W+=P.length;else if(r)return L();if(!U||f.substring(0,a)!==U){if(o){if(u=[],I(f.split(M)),F(),H)return L()}else I(f.split(M));if(N&&N<=E)return u=u.slice(0,N),L(!0)}}return L()}for(var w=i.indexOf(M,W),R=i.indexOf(P,W),C=new RegExp(Q(K)+Q(z),"g"),S=i.indexOf(z,W);;)if(i[W]!==z)if(U&&0===f.length&&i.substring(W,W+a)===U){if(-1===R)return L();W=R+s,R=i.indexOf(P,W),w=i.indexOf(M,W)}else if(-1!==w&&(w<R||-1===R))f.push(i.substring(W,w)),W=w+e,w=i.indexOf(M,W);else{if(-1===R)break;if(f.push(i.substring(W,R)),D(R+s),o&&(F(),H))return L();if(N&&u.length>=N)return L(!0)}else for(S=W,W++;;){if(-1===(S=i.indexOf(z,S+1)))return r||h.push({type:"Quotes",code:"MissingQuotes",message:"Quoted field unterminated",row:u.length,index:W}),T();if(S===n-1)return T(i.substring(W,S).replace(C,z));if(z!==K||i[S+1]!==K){if(z===K||0===S||i[S-1]!==K){-1!==w&&w<S+1&&(w=i.indexOf(M,S+1)),-1!==R&&R<S+1&&(R=i.indexOf(P,S+1));var O=A(-1===R?w:Math.min(w,R));if(i.substr(S+1+O,e)===M){f.push(i.substring(W,S).replace(C,z)),i[W=S+1+O+e]!==z&&(S=i.indexOf(z,W)),w=i.indexOf(M,W),R=i.indexOf(P,W);break}var x=A(R);if(i.substring(S+1+x,S+1+x+s)===P){if(f.push(i.substring(W,S).replace(C,z)),D(S+1+x+s),w=i.indexOf(M,W),S=i.indexOf(z,W),o&&(F(),H))return L();if(N&&u.length>=N)return L(!0);break}h.push({type:"Quotes",code:"InvalidQuotes",message:"Trailing quote on quoted field is malformed",row:u.length,index:W}),S++}}else S++}return T();function I(e){u.push(e),d=W}function A(e){var t=0;if(-1!==e){var r=i.substring(S+1,e);r&&""===r.trim()&&(t=r.length)}return t}function T(e){return r||(void 0===e&&(e=i.substring(W)),f.push(e),W=n,I(f),o&&F()),L()}function D(e){W=e,I(f),f=[],R=i.indexOf(P,W)}function L(e){return{data:u,errors:h,meta:{delimiter:M,linebreak:P,aborted:H,truncated:!!e,cursor:d+(t||0)}}}function F(){q(L()),u=[],h=[]}},this.abort=function(){H=!0},this.getCharIndex=function(){return W}}function _(e){var t=e.data,r=a[t.workerId],i=!1;if(t.error)r.userError(t.error,t.file);else if(t.results&&t.results.data){var n={abort:function(){i=!0,m(t.workerId,{data:[],errors:[],meta:{aborted:!0}})},pause:y,resume:y};if(J(r.userStep)){for(var s=0;s<t.results.data.length&&(r.userStep({data:t.results.data[s],errors:t.results.errors,meta:t.results.meta},n),!i);s++);delete t.results}else J(r.userChunk)&&(r.userChunk(t.results,n,t.file),delete t.results)}t.finished&&!i&&m(t.workerId,t.results)}function m(e,t){var r=a[e];J(r.userComplete)&&r.userComplete(t),r.terminate(),delete a[e]}function y(){throw new Error("Not implemented.")}function w(e){if("object"!=typeof e||null===e)return e;var t=Array.isArray(e)?[]:{};for(var r in e)t[r]=w(e[r]);return t}function v(e,t){return function(){e.apply(t,arguments)}}function J(e){return"function"==typeof e}return o&&(f.onmessage=function(e){var t=e.data;void 0===b.WORKER_ID&&t&&(b.WORKER_ID=t.workerId);if("string"==typeof t.input)f.postMessage({workerId:b.WORKER_ID,results:b.parse(t.input,t.config),finished:!0});else if(f.File&&t.input instanceof File||t.input instanceof Object){var r=b.parse(t.input,t.config);r&&f.postMessage({workerId:b.WORKER_ID,results:r,finished:!0})}}),(l.prototype=Object.create(h.prototype)).constructor=l,(c.prototype=Object.create(h.prototype)).constructor=c,(p.prototype=Object.create(p.prototype)).constructor=p,(g.prototype=Object.create(h.prototype)).constructor=g,b});</script><script>
 (function(){
-const DEF={tab:'overview',area:'United Kingdom',area2:'London',from:'2020-01',ptype:'price',bandRegion:'England and Wales',bandType:'all',localType:'all',localArea:'Essex',localQ:'',invest:250000,loan:200000};
+const DEF={tab:'overview',area:'United Kingdom',area2:'London',from:'2020-01',ptype:'price',bandRegion:'England and Wales',bandType:'all',localType:'all',localArea:'Essex',localQ:'',invest:250000,loan:200000,infl:'cpih'};
 let params=Object.assign({},DEF); const DATA={}; const draws={}; const onDatas=[]; let queued=false;
 function parse(id){ if(!DATA[id]){ const el=document.getElementById('csv-'+id); DATA[id]=Papa.parse(el.textContent.trim(),{header:true,skipEmptyLines:true}).data; } return DATA[id]; }
 function rerun(){ for(const f of onDatas){ try{f()}catch(e){console.error(e)} }
@@ -193,6 +193,7 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
     <button role="tab" id="tab-regions" data-tab="regions">Regions and nations</button>
     <button role="tab" id="tab-bands" data-tab="bands">Price bands</button>
     <button role="tab" id="tab-mortgages" data-tab="mortgages">Mortgages and rates</button>
+    <button role="tab" id="tab-inflation" data-tab="inflation">Inflation-adjusted</button>
     <button role="tab" id="tab-local" data-tab="local">Local areas</button>
     <button role="tab" id="tab-sources" data-tab="sources">Sources and method</button>
   </nav>
@@ -326,6 +327,51 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
     </div>
   </section>
 
+
+  <section class="hm-panel" id="inflation" data-panel="inflation" hidden>
+    <div class="hm-controls hm-sub">
+      <label class="hm-field"><span>Inflation measure</span>
+        <select id="ctl-infl" aria-label="Inflation measure">
+          <option value="cpih">CPIH (ONS lead measure)</option><option value="cpi">CPI</option>
+        </select>
+      </label>
+    </div>
+    <p class="hm-callout">Real prices strip out general inflation, so you can see whether homes gained or lost value in today's money. Every figure on this tab uses the area, period and property type chosen at the top, and is shown in pounds of your end month.</p>
+    <div class="hm-kpis" id="real-kpis">
+      <div class="hm-kpi"><span class="hm-kl">Cash price change</span><b class="hm-kv" data-draw="rk" data-k="nom" data-source="hpi_headline">—</b><span class="hm-ks" data-draw="rk" data-k="span" data-source="hpi_headline">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Inflation over the period</span><b class="hm-kv" data-draw="rk" data-k="infl" data-source="cpi">—</b><span class="hm-ks" data-draw="rk" data-k="measure" data-source="cpi">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Real change</span><b class="hm-kv" data-draw="rk" data-k="real" data-source="hpi_headline cpi">—</b><span class="hm-ks">After inflation</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Real change a year</span><b class="hm-kv" data-draw="rk" data-k="rcagr" data-source="hpi_headline cpi">—</b><span class="hm-ks">Compounded</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Start price in today's money</span><b class="hm-kv" data-draw="rk" data-k="startreal" data-source="hpi_headline cpi">—</b><span class="hm-ks" data-draw="rk" data-k="startlabel" data-source="hpi_headline cpi">—</span></div>
+      <div class="hm-kpi"><span class="hm-kl">Against the real peak</span><b class="hm-kv" data-draw="rk" data-k="peak" data-source="hpi_headline cpi">—</b><span class="hm-ks" data-draw="rk" data-k="peaklabel" data-source="hpi_headline cpi">—</span></div>
+    </div>
+    <div class="hm-card" id="realtrend-card">
+      <h2>Cash price against real price</h2>
+      <p class="hm-note">Real price restates each month's average price in pounds of your end month, so the two lines meet there. Where the real line is higher, prices were worth more in today's money.</p>
+      <div class="hm-legend">
+        <span><i class="hm-lg-line" style="background: var(--hm-s1)"></i>Real price (end-month £)</span>
+        <span><i class="hm-lg-line" style="background: var(--hm-s5)"></i>Cash price</span>
+      </div>
+      <div class="hm-chart" data-draw="realtrend" data-source="hpi_headline cpi events"></div>
+    </div>
+    <div class="hm-grid">
+      <div class="hm-card" id="realregions-card">
+        <h2>Real change by nation and region</h2>
+        <p class="hm-note">Green beat inflation, red lost value in real terms. The grey bar behind is the cash change.</p>
+        <div class="hm-chart" data-draw="realregions" data-source="hpi_headline cpi"></div>
+      </div>
+      <div class="hm-card" id="realtypes-card">
+        <h2>Real change by property type</h2>
+        <p class="hm-note">Selected area, start to end month.</p>
+        <div class="hm-tablewrap" data-draw="realtypes" data-source="hpi_headline cpi"></div>
+      </div>
+    </div>
+    <div class="hm-card" id="realmortgage-card">
+      <h2>Monthly mortgage cost in real terms</h2>
+      <p class="hm-note">Average price for the selected area, 25% deposit, 25-year repayment loan at the Bank of England average 2-year fixed rate (75% LTV). Excludes fees and does not include earnings.</p>
+      <div class="hm-tablewrap" data-draw="realmortgage" data-source="hpi_headline cpi boe_mortgage"></div>
+    </div>
+  </section>
   <section class="hm-panel" id="local" data-panel="local" hidden>
     <div class="hm-controls hm-sub">
       <label class="hm-field"><span>Search areas</span><input id="ctl-local-q" type="search" placeholder="e.g. Essex, Leeds, Camden" aria-label="Search local areas"></label>
@@ -365,13 +411,17 @@ window.addEventListener('DOMContentLoaded',()=>{ lastW=innerWidth; rerun(); });
           <p>Monthly average Bank Rate (IUMABEDR), quoted rates on 2-year fixed 75% LTV (IUMBV34), 5-year fixed 75% LTV (IUMBV42), 2-year fixed 90% LTV (IUMB482) and revert-to rate (IUMTLMV) mortgages, and approvals for house purchase (LPMVTVX), January 2015 to September 2026.</p>
         </div>
         <div>
+          <h3>Inflation</h3>
+          <p>ONS CPIH (L522) and CPI (D7BT) indices, 2015 = 100, January 2015 to September 2026, released 21 October 2026. Used only on the Inflation-adjusted tab.</p>
+        </div>
+        <div>
           <h3>Things to know</h3>
           <ul>
             <li>The latest HPI months are provisional and are revised as more sales are registered.</li>
             <li>HPI sales volumes run to June 2026; July and August are not yet published.</li>
             <li>Northern Ireland figures are quarterly, so the same value repeats for three months.</li>
             <li>Price Paid counts for July to September 2026 are incomplete because of registration lag.</li>
-            <li>Figures are nominal: they are not adjusted for inflation.</li>
+            <li>Figures are nominal except on the Inflation-adjusted tab.</li>
           </ul>
         </div>
       </div>
@@ -100378,6 +100428,149 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
 2026-03,Iran conflict mortgage shock,Moneyfacts: average 2-year fix rose from 4.84% to 5.84% between 1 March and 1 April 2026 and 1283 products were withdrawn – the biggest shock since the mini-budget.,Moneyfacts Group (2 Apr 2026),https://moneyfactsgroup.co.uk/media-centre/consumer/the-biggest-shock-to-the-uk-mortgage-market-since-the-mini-budget/
 2026-10,Nationwide: prices flat,Nationwide October 2026 average £273566; annual growth 0.5% – weakest since January 2024 – as expectations of Bank Rate rises weigh.,Yahoo Finance / Investing.com (30 Oct 2026),https://uk.finance.yahoo.com/news/uk-house-prices-flat-october-083013397.html
 </script>
+<script type="text/csv" id="csv-cpi">month,cpi,cpih
+2015-01,99.3,99.2
+2015-02,99.5,99.5
+2015-03,99.7,99.6
+2015-04,99.9,99.9
+2015-05,100.1,100.1
+2015-06,100.2,100.1
+2015-07,100.0,100.0
+2015-08,100.3,100.3
+2015-09,100.2,100.2
+2015-10,100.3,100.3
+2015-11,100.3,100.3
+2015-12,100.3,100.4
+2016-01,99.5,99.9
+2016-02,99.8,100.1
+2016-03,100.2,100.4
+2016-04,100.2,100.6
+2016-05,100.4,100.8
+2016-06,100.6,101.0
+2016-07,100.6,100.9
+2016-08,100.9,101.2
+2016-09,101.1,101.5
+2016-10,101.2,101.6
+2016-11,101.4,101.8
+2016-12,101.9,102.2
+2017-01,101.4,101.8
+2017-02,102.1,102.4
+2017-03,102.5,102.7
+2017-04,102.9,103.2
+2017-05,103.3,103.5
+2017-06,103.3,103.5
+2017-07,103.2,103.5
+2017-08,103.8,104.0
+2017-09,104.1,104.3
+2017-10,104.2,104.4
+2017-11,104.6,104.7
+2017-12,104.9,105.0
+2018-01,104.4,104.5
+2018-02,104.9,104.9
+2018-03,105.0,105.1
+2018-04,105.4,105.5
+2018-05,105.8,105.9
+2018-06,105.8,105.9
+2018-07,105.8,105.9
+2018-08,106.5,106.5
+2018-09,106.6,106.6
+2018-10,106.7,106.7
+2018-11,107.0,106.9
+2018-12,107.1,107.1
+2019-01,106.3,106.4
+2019-02,106.8,106.8
+2019-03,107.0,107.0
+2019-04,107.6,107.6
+2019-05,107.9,107.9
+2019-06,107.9,107.9
+2019-07,107.9,108.0
+2019-08,108.4,108.3
+2019-09,108.5,108.4
+2019-10,108.3,108.3
+2019-11,108.5,108.5
+2019-12,108.5,108.5
+2020-01,108.2,108.3
+2020-02,108.6,108.6
+2020-03,108.6,108.6
+2020-04,108.5,108.6
+2020-05,108.5,108.6
+2020-06,108.6,108.8
+2020-07,109.1,109.2
+2020-08,108.6,108.8
+2020-09,109.1,109.2
+2020-10,109.1,109.2
+2020-11,108.9,109.1
+2020-12,109.2,109.4
+2021-01,109.0,109.3
+2021-02,109.1,109.4
+2021-03,109.4,109.7
+2021-04,110.1,110.4
+2021-05,110.8,111.0
+2021-06,111.3,111.4
+2021-07,111.3,111.4
+2021-08,112.1,112.1
+2021-09,112.4,112.4
+2021-10,113.6,113.4
+2021-11,114.5,114.1
+2021-12,115.1,114.7
+2022-01,114.9,114.6
+2022-02,115.8,115.4
+2022-03,117.1,116.5
+2022-04,120.0,119.0
+2022-05,120.8,119.7
+2022-06,121.8,120.5
+2022-07,122.5,121.2
+2022-08,123.1,121.8
+2022-09,123.8,122.3
+2022-10,126.2,124.3
+2022-11,126.7,124.8
+2022-12,127.2,125.3
+2023-01,126.4,124.8
+2023-02,127.9,126.0
+2023-03,128.9,126.8
+2023-04,130.4,128.3
+2023-05,131.3,129.1
+2023-06,131.5,129.4
+2023-07,130.9,129.0
+2023-08,131.3,129.4
+2023-09,132.0,130.1
+2023-10,132.0,130.2
+2023-11,131.7,130.0
+2023-12,132.2,130.5
+2024-01,131.5,130.0
+2024-02,132.3,130.8
+2024-03,133.0,131.6
+2024-04,133.5,132.2
+2024-05,133.9,132.7
+2024-06,134.1,133.0
+2024-07,133.8,132.9
+2024-08,134.3,133.4
+2024-09,134.2,133.5
+2024-10,135.0,134.3
+2024-11,135.1,134.6
+2024-12,135.6,135.1
+2025-01,135.4,135.1
+2025-02,136.0,135.6
+2025-03,136.5,136.1
+2025-04,138.2,137.7
+2025-05,138.4,138.0
+2025-06,138.9,138.4
+2025-07,139.0,138.5
+2025-08,139.3,138.9
+2025-09,139.3,138.9
+2025-10,139.8,139.5
+2025-11,139.5,139.4
+2025-12,140.1,139.9
+2026-01,139.5,139.4
+2026-02,140.1,140.0
+2026-03,141.0,140.8
+2026-04,142.1,141.8
+2026-05,142.4,142.1
+2026-06,142.5,142.3
+2026-07,142.9,142.7
+2026-08,143.6,143.4
+2026-09,144.1,144.0
+</script>
 <script>(() => {
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const KEY_ORDER = ['United Kingdom', 'Great Britain', 'England and Wales', 'England', 'Wales', 'Scotland', 'Northern Ireland',
@@ -100389,7 +100582,7 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
   const BANDS = ['Under £200k', '£200k–£300k', '£300k–£500k', '£500k–£750k', '£750k–£1m', '£1m–£1.5m', '£1.5m–£2m', '£2m+'];
   const PTYPES_PPD = ['Detached', 'Semi-detached', 'Terraced', 'Flat/maisonette', 'Other'];
   const DEF = { tab: 'overview', area: 'United Kingdom', area2: 'London', from: '2020-01', to: null, ptype: 'price',
-    bandRegion: 'England and Wales', bandType: 'all', localType: 'all', localArea: 'Essex', localQ: '', invest: 250000, loan: 200000 };
+    bandRegion: 'England and Wales', bandType: 'all', localType: 'all', localArea: 'Essex', localQ: '', invest: 250000, loan: 200000, infl: 'cpih' };
   const TERM_YEARS = 25;
 
   // ---------- formatting ----------
@@ -100750,6 +100943,7 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
   for (const sel of $$('#ctl-band-region')) sel.addEventListener('change', () => dash.setParams({ bandRegion: sel.value }));
   for (const sel of $$('#ctl-band-type')) sel.addEventListener('change', () => dash.setParams({ bandType: sel.value }));
   for (const sel of $$('#ctl-local-type')) sel.addEventListener('change', () => dash.setParams({ localType: sel.value }));
+  for (const sel of $$('#ctl-infl')) sel.addEventListener('change', () => dash.setParams({ infl: sel.value }));
   for (const inp of $$('#ctl-local-q')) inp.addEventListener('input', () => dash.setParams({ localQ: inp.value }));
   for (const inp of $$('#ctl-invest')) inp.addEventListener('change', () => { const v = +inp.value; if (v >= 1000 && v <= 1e8) dash.setParams({ invest: Math.round(v) }); });
   for (const inp of $$('#ctl-loan')) inp.addEventListener('change', () => { const v = +inp.value; if (v >= 1000 && v <= 1e8) dash.setParams({ loan: Math.round(v) }); });
@@ -100781,6 +100975,7 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
     for (const sel of $$('#ctl-band-region')) sel.value = p.bandRegion;
     for (const sel of $$('#ctl-band-type')) sel.value = p.bandType;
     for (const sel of $$('#ctl-local-type')) sel.value = p.localType;
+    for (const sel of $$('#ctl-infl')) sel.value = p.infl === 'cpi' ? 'cpi' : 'cpih';
     for (const inp of $$('#ctl-local-q')) if (inp !== document.activeElement) inp.value = p.localQ || '';
     for (const inp of $$('#ctl-invest')) if (inp !== document.activeElement) inp.value = p.invest;
     for (const inp of $$('#ctl-loan')) if (inp !== document.activeElement) inp.value = p.loan;
@@ -101148,6 +101343,130 @@ York,Unitary authority,2026-08,311865,,510541,335176,290524,180669
     else if (k === 'p1') el.textContent = gbp(p1);
     else if (k === 'p2') el.textContent = gbp(p2);
     else if (k === 'd') el.textContent = ok(p1) && ok(p2) ? gbpS(p2 - p1) : '—';
+  });
+
+
+  // ---------- inflation-adjusted ----------
+  let CC = { src: null, v: null };
+  function cpiData() {
+    const d = dash.data('cpi');
+    if (d.status !== 'ok' || !d.data || !d.data.length) return null;
+    if (CC.src === d.data) return CC.v;
+    const by = new Map(d.data.map((r) => [r.month, { cpi: nz(r.cpi), cpih: nz(r.cpih) }]));
+    CC = { src: d.data, v: { by } };
+    return CC.v;
+  }
+  function inflCtx() {
+    const h = head(), c = cpiData(), per = period(); if (!h || !c || !per) return null;
+    const p = P(); const key = p.infl === 'cpi' ? 'cpi' : 'cpih';
+    const idx = (m) => { const r = c.by.get(m); return r ? r[key] : null; };
+    const base = per.to;
+    const real = (v, m) => (ok(v) && ok(idx(m)) && ok(idx(base))) ? v * idx(base) / idx(m) : null;
+    const inflation = ok(idx(per.from)) && ok(idx(base)) ? (idx(base) / idx(per.from) - 1) * 100 : null;
+    return { h, p, per, key, idx, base, real, inflation, f: p.ptype };
+  }
+  const realGrowth = (g, inf) => ok(g) && ok(inf) ? ((1 + g / 100) / (1 + inf / 100) - 1) * 100 : null;
+
+  dash.draw('rk', (el) => {
+    const x = inflCtx(); if (!x) return dashOut(el);
+    const { h, p, per, f } = x; const k = el.dataset.k;
+    const a = get(h, p.area, per.from), b = get(h, p.area, per.to);
+    const va = a && a[f], vb = b && b[f];
+    const g = growth(va, vb), rg = realGrowth(g, x.inflation);
+    el.classList.remove('hm-up', 'hm-down');
+    const tint = (v) => { if (cls(v)) el.classList.add(cls(v)); };
+    if (k === 'nom') { el.textContent = pct(g); tint(g); }
+    else if (k === 'span') el.textContent = areaLabel(p.area) + ' · ' + mshort(per.from) + ' to ' + mshort(per.to);
+    else if (k === 'infl') el.textContent = pct(x.inflation);
+    else if (k === 'measure') el.textContent = (x.key === 'cpi' ? 'CPI' : 'CPIH') + ', ' + mshort(per.from) + ' to ' + mshort(per.to);
+    else if (k === 'real') { el.textContent = pct(rg); tint(rg); }
+    else if (k === 'rcagr') { const c = per.n >= 12 && ok(rg) ? (Math.pow(1 + rg / 100, 12 / per.n) - 1) * 100 : null; el.textContent = ok(c) ? pct(c, 2) : 'Under 1 year'; tint(c); }
+    else if (k === 'startreal') el.textContent = gbp(x.real(va, per.from));
+    else if (k === 'startlabel') el.textContent = mlabel(per.from) + ' price in ' + mshort(per.to) + ' £';
+    else if (k === 'peak' || k === 'peaklabel') {
+      let best = null;
+      for (const r of h.areas.get(p.area).rows) { if (!r || r.month > per.to) continue; const rv = x.real(r[f], r.month); if (ok(rv) && (!best || rv > best.v)) best = { m: r.month, v: rv }; }
+      if (!best || !ok(vb)) { el.textContent = '—'; return; }
+      const d = (vb / best.v - 1) * 100;
+      if (k === 'peak') { el.textContent = Math.abs(d) < 0.05 ? 'At peak' : pct(d); tint(d); }
+      else el.textContent = 'Real peak ' + mshort(best.m) + ': ' + gbp(best.v);
+    }
+  });
+
+  dash.draw('realtrend', (el) => {
+    const x = inflCtx(); if (!x) { el.replaceChildren(); return; }
+    const { h, p, per, f } = x;
+    const rows = h.areas.get(p.area).rows.filter((r) => r && ok(r[f]) && ok(x.idx(r.month)));
+    const series = [
+      { name: 'Real price', short: 'Real', color: 'var(--hm-s1)', width: 2.5, pts: rows.map((r) => ({ m: r.month, v: x.real(r[f], r.month) })) },
+      { name: 'Cash price', short: 'Cash', color: 'var(--hm-s5)', pts: rows.map((r) => ({ m: r.month, v: r[f] })) },
+    ];
+    lineChart(el, { series, xFrom: h.first, xTo: h.latest, period: per, events: eventsRows(),
+      aria: 'Cash and real average price for ' + areaLabel(p.area),
+      tipExtra: (tip, m) => { tip.appendChild(tipRow(null, 'Prices in', mshort(per.to) + ' £ (' + (x.key === 'cpi' ? 'CPI' : 'CPIH') + ')')); } });
+  });
+
+  dash.draw('realregions', (el) => {
+    const x = inflCtx(); el.replaceChildren(); if (!x) return;
+    const { h, p, per, f } = x;
+    const data = REGIONS.filter((n) => h.areas.has(n)).map((n) => {
+      const a = get(h, n, per.from), b = get(h, n, per.to); const g = growth(a && a[f], b && b[f]);
+      return { n, g, r: realGrowth(g, x.inflation) };
+    }).filter((d) => ok(d.r)).sort((a, b) => b.r - a.r);
+    if (!data.length) { el.textContent = '—'; return; }
+    const W = Math.max(260, el.clientWidth || 600), bh = 20, gap = 8, mt = 6, mb = 24;
+    const H = mt + mb + data.length * (bh + gap);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Real change by region');
+    const ml = Math.ceil(measure(svg, data.map((d) => areaLabel(d.n)), 'hm-barlabel')) + 12;
+    const vr = Math.ceil(measure(svg, data.map((d) => pct(d.g)), 'hm-barlabel')) + 10;
+    const lo = Math.min(0, d3.min(data, (d) => Math.min(d.r, d.g))), hi = Math.max(0, d3.max(data, (d) => Math.max(d.r, d.g)));
+    const x0 = d3.scaleLinear([lo, hi], [ml + (lo < 0 ? vr : 0), W - vr]).nice();
+    const g = svg.append('g');
+    const xt = x0.ticks(W < 480 ? 3 : 5);
+    g.selectAll('line.gl').data(xt).join('line').attr('class', 'hm-gridline').attr('x1', (d) => x0(d)).attr('x2', (d) => x0(d)).attr('y1', mt).attr('y2', H - mb);
+    g.selectAll('text.xt').data(xt).join('text').attr('class', 'hm-tick').attr('x', (d) => x0(d)).attr('y', H - 6).attr('text-anchor', 'middle').text((d) => d + '%');
+    const tip = makeTip(el);
+    data.forEach((d, i) => {
+      const yy = mt + i * (bh + gap); const on = d.n === p.area;
+      g.append('text').attr('class', 'hm-barlabel').attr('x', ml - 10).attr('y', yy + bh / 2).attr('dy', '0.35em').attr('text-anchor', 'end').attr('font-weight', on ? 700 : null).text(areaLabel(d.n));
+      const gx0 = x0(Math.min(0, d.g)), gx1 = x0(Math.max(0, d.g));
+      g.append('rect').attr('x', gx0).attr('y', yy).attr('width', Math.max(1, gx1 - gx0)).attr('height', bh).attr('rx', 2).attr('fill', 'var(--hm-s5)').attr('opacity', 0.25);
+      const rx0 = x0(Math.min(0, d.r)), rx1 = x0(Math.max(0, d.r));
+      g.append('rect').attr('x', rx0).attr('y', yy + 5).attr('width', Math.max(1, rx1 - rx0)).attr('height', bh - 10).attr('rx', 2)
+        .attr('fill', d.r >= 0 ? 'var(--hm-up)' : 'var(--hm-down)').attr('opacity', 0.8).style('cursor', 'pointer')
+        .on('click', () => dash.setParams({ area: d.n }))
+        .on('pointerenter', () => { tip.replaceChildren(); const t = document.createElement('div'); t.className = 'hm-tt'; t.textContent = areaLabel(d.n); tip.appendChild(t);
+          tip.appendChild(tipRow(null, 'Cash change', pct(d.g))); tip.appendChild(tipRow(null, 'Real change', pct(d.r))); placeTip(el, tip, rx1, yy); })
+        .on('pointerleave', () => { tip.hidden = true; });
+      g.append('text').attr('class', 'hm-barlabel').attr('font-weight', 600).attr('x', d.r >= 0 ? Math.max(rx1, gx1) + 6 : rx0 - 6).attr('y', yy + bh / 2).attr('dy', '0.35em')
+        .attr('text-anchor', d.r >= 0 ? 'start' : 'end').text(pct(d.r));
+    });
+    g.append('line').attr('x1', x0(0)).attr('x2', x0(0)).attr('y1', mt - 2).attr('y2', H - mb).attr('stroke', 'var(--cds-chart-axis)');
+  });
+
+  dash.draw('realtypes', (el) => {
+    const x = inflCtx(); if (!x) return dashOut(el);
+    const { h, p, per } = x;
+    const a = get(h, p.area, per.from), b = get(h, p.area, per.to);
+    const rows = Object.keys(PT).map((f) => {
+      const g = growth(a && a[f], b && b[f]); const r = realGrowth(g, x.inflation);
+      return { _cls: f === p.ptype ? 'hm-sel' : '', cells: [{ text: PT[f], cls: 'hm-l' }, { text: pct(g), cls: cls(g) }, { text: pct(r), cls: cls(r) },
+        { text: ok(a && a[f]) ? gbp(x.real(a[f], per.from)) : '—' }, { text: ok(b && b[f]) ? gbp(b[f]) : '—' }] };
+    });
+    table(el, [{ label: 'Type' }, { label: 'Cash change' }, { label: 'Real change' }, { label: mshort(per.from) + ' in ' + mshort(per.to) + ' £' }, { label: mshort(per.to) }], rows);
+  });
+
+  dash.draw('realmortgage', (el) => {
+    const x = inflCtx(); const b = boe(); if (!x || !b) return dashOut(el);
+    const { h, p, per } = x;
+    const pay = (L, r) => { if (!ok(L) || !ok(r)) return null; const i = r / 1200, n = TERM_YEARS * 12; return i === 0 ? L / n : L * i / (1 - Math.pow(1 + i, -n)); };
+    const line = (m) => { const r = get(h, p.area, m); const price = r && r.price; const rate = b.by.get(m) && b.by.get(m).fix2_75; const pm_ = pay(ok(price) ? price * 0.75 : null, rate); return { m, price, rate, pm_, real: x.real(pm_, m) }; };
+    const A = line(per.from), B = line(per.to);
+    const rows = [A, B].map((r) => ({ cells: [{ text: mlabel(r.m), cls: 'hm-l' }, gbp(r.price), ok(r.rate) ? r.rate.toFixed(2) + '%' : '—', gbp(r.pm_), gbp(r.real)] }));
+    const rc = ok(A.real) && ok(B.real) ? (B.real / A.real - 1) * 100 : null;
+    rows.push({ _cls: 'hm-total', cells: [{ text: 'Change', cls: 'hm-l' }, { text: pct(growth(A.price, B.price)), cls: cls(growth(A.price, B.price)) }, ok(A.rate) && ok(B.rate) ? ppt(B.rate - A.rate) : '—',
+      { text: pct(growth(A.pm_, B.pm_)), cls: '' }, { text: pct(rc) + ' real', cls: '' }] });
+    table(el, [{ label: 'Month' }, { label: 'Average price' }, { label: '2-yr fixed rate' }, { label: 'Monthly repayment' }, { label: 'In ' + mshort(per.to) + ' £' }], rows);
   });
 
   // ---------- local areas ----------

@@ -24,15 +24,16 @@ Interactive dashboard of UK house prices from January 2015 to August 2026, built
 
 ### Excel workbook
 - **Comparison:** change the yellow cells (area, months as YYYY-MM); results update by formula.
+- **Real_Terms:** inflation-adjusted prices. Pick area, CPIH or CPI, base month and period for real change, real peak, property types, regions and real mortgage cost.
 - **Regions, Annual_Averages, Band_Shares:** summaries built on the raw data tabs. See the Read Me tab.
 
 ## Data notes
 - Sources: HM Land Registry UK House Price Index (released 21 Oct 2026) and Price Paid Data; Bank of England mortgage rates. News sources used for event context only.
-- Prices are nominal (not inflation-adjusted).
+- Dashboard prices are nominal. The workbook's Real_Terms sheet adjusts them for inflation using ONS CPIH or CPI.
 - Latest months are provisional; sales counts after June 2026 are incomplete.
 - Northern Ireland figures are quarterly.
 - Blank or "Not published" means the series is not published for that area or month.
 - Annualised growth shows only for periods of 12 months or more.
 - The purchase calculator is an index estimate, not a valuation.
 
-Contains HM Land Registry data © Crown copyright and database right 2026, licensed under the Open Government Licence v3.0. Contains Bank of England data.
+Contains HM Land Registry data © Crown copyright and database right 2026, licensed under the Open Government Licence v3.0. Contains Bank of England data. Contains ONS data (CPI, CPIH) © Crown copyright, Open Government Licence v3.0.
