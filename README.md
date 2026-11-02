@@ -12,6 +12,8 @@ Interactive dashboard of UK house prices from January 2015 to August 2026, built
 - **From / To:** choose any month and year from Jan 2015 to Aug 2026. Every chart, table and figure updates.
 - **Quick periods:** one-click presets such as Last 12 months, Pre-Covid → latest, Jan 2020 → Dec 2024. Reset restores defaults.
 - **Property type:** all, detached, semi-detached, terraced, flats.
+- **Prices: Cash / Adjusted for inflation:** one toggle restates every price and growth figure on every tab in pounds of your To month (ONS CPIH or CPI), so changes become real changes. Price-band counts and mortgage rates are not adjusted.
+- **ⓘ icons:** hover or tap any ⓘ next to a figure or chart title for a plain-English explanation.
 - **Hover or tap** charts for exact values. Orange dots under the trend chart are market events.
 
 ### Tabs
@@ -20,6 +22,7 @@ Interactive dashboard of UK house prices from January 2015 to August 2026, built
 - **Price bands:** share of sales from under £200k to £2m+ by year (England and Wales; shows sales mix, not value growth).
 - **Mortgages and rates:** Bank Rate, fixed and variable rates, approvals, repayment comparison.
 - **Local areas:** all 387 counties, districts, boroughs and councils; search, sort, click to chart.
+- **Inflation detail:** cash vs real price chart, real change by region and property type, real mortgage cost.
 - **Sources and method:** data sources and the events timeline.
 
 ### Excel workbook
@@ -29,7 +32,7 @@ Interactive dashboard of UK house prices from January 2015 to August 2026, built
 
 ## Data notes
 - Sources: HM Land Registry UK House Price Index (released 21 Oct 2026) and Price Paid Data; Bank of England mortgage rates. News sources used for event context only.
-- Dashboard prices are nominal. The workbook's Real_Terms sheet adjusts them for inflation using ONS CPIH or CPI.
+- Prices are cash (nominal) by default. Switch on Adjusted for inflation in the dashboard, or use the workbook's Real_Terms sheet, for real-terms figures.
 - Latest months are provisional; sales counts after June 2026 are incomplete.
 - Northern Ireland figures are quarterly.
 - Blank or "Not published" means the series is not published for that area or month.
